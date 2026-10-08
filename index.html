@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e3a8a">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<title>kubikasiku — Hitung Kubikasi Kendaraan</title>
+<style>
+  :root{
+    --bg:#f1f5f9; --card:#ffffff; --ink:#0f172a; --muted:#64748b;
+    --blue:#2563eb; --blue-d:#1d4ed8; --green:#16a34a; --amber:#d97706; --red:#dc2626;
+    --line:#e2e8f0; --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  :root{ color-scheme: light; }
+  input,select,textarea,button{ color:var(--ink); }
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);}
+  header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:18px 16px 16px;position:relative;}
+  .menubtn{position:absolute;top:12px;right:12px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.15);color:#fff;border-radius:10px;font-size:20px;font-weight:700;padding:2px 12px;cursor:pointer;line-height:1.4;}
+  .menubtn:active{background:rgba(255,255,255,.3);}
+  #menuPanel{margin:0 12px 12px;}
+  #updBanner{display:none;position:sticky;top:0;z-index:50;background:#fef3c7;border-bottom:2px solid #f59e0b;color:#92400e;padding:10px 14px;font-size:14px;font-weight:600;text-align:center;}
+  #updBanner button{margin-left:8px;background:#d97706;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:14px;}
+  header h1{margin:0;font-size:22px;letter-spacing:.3px;}
+  .logo{width:34px;height:34px;border-radius:9px;vertical-align:-8px;margin-right:6px;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+  header p{margin:4px 0 0;font-size:13px;opacity:.85;}
+  main{max-width:960px;margin:0 auto;padding:14px 12px 40px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(15,23,42,.06);}
+  .card h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:8px;}
+  .stepnum{background:var(--blue);color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .formgrid label{font-size:12px;color:var(--muted);display:block;}
+  .formgrid input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px;margin-top:3px;}
+  .formgrid input:focus{outline:2px solid #bfdbfe;border-color:var(--blue);}
+  .full{grid-column:1/-1;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer;}
+  .btn-blue{background:var(--blue);color:#fff;width:100%;margin-top:10px;}
+  .btn-blue:active{background:var(--blue-d);}
+  .btn-ghost{background:#eef2ff;color:var(--blue-d);padding:6px 12px;font-size:13px;border-radius:8px;}
+  .itemlist{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+  .itemrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#f8fafc;}
+  .itemswatch{width:14px;height:14px;border-radius:4px;flex:none;}
+  .iteminfo{flex:1;min-width:0;}
+  .iteminfo b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .iteminfo span{font-size:12px;color:var(--muted);}
+  .itemdel{border:none;background:#fee2e2;color:var(--red);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;}
+  .totals{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .totbox{flex:1;min-width:130px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:8px 12px;}
+  .totbox small{color:var(--muted);font-size:11px;display:block;}
+  .totbox b{font-size:17px;}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+  .vcard{border:2px solid var(--line);border-radius:12px;padding:8px;cursor:pointer;background:#fff;transition:border-color .15s, transform .1s;}
+  .vcard:active{transform:scale(.98);}
+  .vcard.sel{border-color:var(--blue);box-shadow:0 0 0 3px #bfdbfe;background:#eff6ff;}
+  .vcard svg{width:100%;height:auto;display:block;}
+  .vcard .vname{font-weight:700;font-size:14px;margin-top:4px;}
+  .vcard .vdim{font-size:12px;color:var(--muted);}
+  .vcard .vvol{font-size:13px;font-weight:700;color:var(--blue-d);}
+  #shipCanvas{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .barwrap{background:#e2e8f0;border-radius:999px;height:18px;overflow:hidden;margin:10px 0 4px;}
+  #fillbar{height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;transition:width .4s;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:10px;}
+  .stat{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .stat small{color:var(--muted);font-size:11px;display:block;}
+  .stat b{font-size:16px;}
+  .warn{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px;}
+  .okmsg{background:#dcfce7;border:1px solid #86efac;color:#166534;border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12px;color:var(--muted);}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:-1px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:16px;}
+  @media(min-width:640px){ .formgrid{grid-template-columns:repeat(4,1fr);} }
+  .tabs{display:flex;gap:8px;margin-bottom:12px;position:sticky;top:0;background:var(--bg);padding:10px 0;z-index:5;}
+  .tabbtn{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 6px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .tabbtn.active{border-color:var(--blue);color:var(--blue-d);background:#eff6ff;}
+  .tabpane{display:none;}
+  .tabpane.active{display:block;}
+  .koderow{display:flex;gap:8px;}
+  .koderow label{flex:1;font-size:12px;color:var(--muted);display:block;}
+  .koderow label:first-child{flex:0 0 110px;}
+  .koderow input{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px;margin-top:3px;}
+  .tblwrap{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:10px;}
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:640px;}
+  table.tbl th{background:#eff6ff;color:var(--blue-d);text-align:left;padding:9px 10px;font-size:12px;white-space:nowrap;}
+  table.tbl td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:middle;}
+  table.tbl td.num, table.tbl th.num{text-align:right;white-space:nowrap;}
+  .kodepill{background:#eef2ff;color:var(--blue-d);font-weight:700;font-size:12px;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+  .carilist{max-height:230px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px;background:#fff;}
+  .carirow{padding:9px 10px;border-top:1px solid var(--line);cursor:pointer;font-size:13px;}
+  .carirow:first-child{border-top:none;}
+  .carirow:active{background:#eff6ff;}
+  .guidelist{margin:6px 0 4px;padding-left:22px;font-size:13px;}
+  .guidelist li{margin-bottom:8px;}
+  .sub{font-size:14px;margin:14px 0 8px;color:var(--ink);}
+  .shiprow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:#f8fafc;}
+  .shiprow input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--blue);}
+  .shipqty{width:64px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:14px;}
+  .segmode{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:4px;}
+  .segmode button{border:none;background:#f1f5f9;color:var(--muted);font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;}
+  .segmode button.on{background:var(--blue);color:#fff;}
+  .convline{font-size:11px;color:var(--blue-d);font-weight:700;margin-top:2px;white-space:nowrap;}
+  .vehsel{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#fff;}
+  .vehprevbox{display:flex;gap:12px;align-items:center;border:2px solid #bfdbfe;background:#eff6ff;border-radius:12px;padding:10px;margin-top:10px;}
+  .vehprevbox svg{width:150px;flex:none;}
+  .modeseg{display:flex;gap:8px;margin-bottom:4px;}
+  .modebtn{flex:1;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 6px;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .modebtn small{display:block;font-weight:400;font-size:11px;margin-top:2px;}
+  .modebtn.active{border-color:var(--blue);color:var(--blue-d);background:#eff6ff;}
+  .itemswatch{width:14px;height:14px;border-radius:4px;flex:none;}
+#printArea{display:none;}
+@media print{
+  @page{ margin:11mm; }
+  body{ background:#fff; }
+  body>*{ display:none !important; }
+  #printArea{ display:block !important; color:#000; font-size:12px; }
+  #printArea h2{ font-size:18px; margin:0 0 2px; }
+  #printArea h3{ font-size:14px; margin:12px 0 4px; border-bottom:1px solid #999; padding-bottom:2px; }
+  #printArea table{ width:100%; border-collapse:collapse; font-size:12px; }
+  #printArea th, #printArea td{ border:1px solid #999; padding:4px 6px; text-align:left; }
+  #printArea .num{ text-align:right; }
+  #printArea img{ max-width:100%; }
+}
+</style>
+</head>
+<body>
+<div id="updBanner">🆕 <span id="updInfo">Versi baru tersedia!</span> <button id="btnUpd">Muat ulang</button></div>
+<header>
+  <h1><img src="icon-192.png" class="logo" alt="kubikasiku"> kubikasiku</h1>
+  <p>Hitung kubikasi &amp; simulasi muatan kendaraan — barang, kendaraan, lalu lihat bak terisi</p>
+  <button id="btnMenu" class="menubtn" title="Pengaturan & backup">⋯</button>
+</header>
+<div id="menuPanel" class="card" style="display:none">
+  <h2>⚙️ Pengaturan</h2>
+  <h3 class="sub">📲 Install aplikasi</h3>
+  <button class="btn-ghost" id="btnInstall" style="width:100%;margin-top:0" disabled>⬇️ Install ke layar utama</button>
+  <div class="hint" id="installHint">Buka di Chrome/Edge, lalu tekan tombol di atas agar aplikasi terpasang di layar utama dan bisa dipakai offline penuh.</div>
+  <h3 class="sub">💾 Backup lokal</h3>
+  <div style="display:flex;gap:8px">
+    <button class="btn-ghost" id="btnDlBackup" style="flex:1;margin-top:0">⬇️ Unduh backup</button>
+    <button class="btn-ghost" id="btnUpBackup" style="flex:1;margin-top:0">⬆️ Pulihkan file</button>
+    <input type="file" id="fileBackup" accept=".json,application/json" style="display:none">
+  </div>
+  <h3 class="sub">☁️ Google Drive</h3>
+  <div id="gdStatus" class="hint">Belum terhubung.</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn-ghost" id="btnGdConn" style="flex:1;margin-top:0">🔗 Hubungkan</button>
+    <button class="btn-ghost" id="btnGdBackup" style="flex:1;margin-top:0">⬆️ Backup sekarang</button>
+    <button class="btn-ghost" id="btnGdRestore" style="flex:1;margin-top:0">⬇️ Pulihkan</button>
+  </div>
+  <div id="gdInfo" class="hint"></div>
+  <h3 class="sub">☁️ Sinkronisasi akun</h3>
+  <div id="cloudStatus" class="hint">Belum masuk — data hanya tersimpan di HP ini.</div>
+  <div id="cloudForm" style="display:grid;gap:8px;margin-top:8px">
+    <input id="cloudUser" placeholder="Nama pengguna (huruf/angka, min 3)" autocomplete="username" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
+    <input id="cloudPass" type="password" placeholder="Kata sandi (min 4 karakter)" autocomplete="current-password" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
+    <div style="display:flex;gap:8px">
+      <button class="btn-ghost" id="btnCloudReg" style="flex:1;margin-top:0">📝 Daftar</button>
+      <button class="btn-ghost" id="btnCloudLogin" style="flex:1;margin-top:0">🔑 Masuk</button>
+    </div>
+  </div>
+  <button class="btn-ghost" id="btnCloudOut" style="width:100%;margin-top:8px;display:none">🚪 Keluar</button>
+  <div class="hint">Daftar sekali, lalu masuk di HP lain dengan akun yang sama — data tersinkron otomatis.</div>
+  <h3 class="sub">🔄 Pembaruan aplikasi</h3>
+  <div class="hint">Versi terpasang: <b id="appVer">-</b></div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-ghost" id="btnCekUpd" style="flex:1;margin-top:0">🔄 Cek update</button>
+  </div>
+</div>
+<main>
+  <div class="tabs">
+    <button class="tabbtn active" id="tab1" onclick="goTab(1)">📦 1. Input Barang</button>
+    <button class="tabbtn" id="tab2" onclick="goTab(2)">🧮 2. Hitung Volume</button>
+    <button class="tabbtn" id="tab3" onclick="goTab(3)">🕘 3. Riwayat</button>
+  </div>
+  <div class="tabpane active" id="pane1">
+  <div class="card">
+    <h2><span class="stepnum">1</span> Input barang</h2>
+    <button class="btn btn-blue" id="btnShowForm" style="margin:0 0 10px">＋ Tambah barang</button>
+    <div style="display:flex;gap:8px;margin:0 0 10px">
+      <button class="btn-ghost" id="btnImpCsv" style="flex:1;margin-top:0">📥 Import Excel/CSV</button>
+      <button class="btn-ghost" id="btnTplXlsx" style="flex:1;margin-top:0">📄 Format Excel</button>
+      <button class="btn-ghost" id="btnExpCsv" style="flex:1;margin-top:0">📤 Export CSV</button>
+      <input type="file" id="fileCsv" accept=".csv,.xlsx,text/csv" style="display:none">
+    </div>
+    <p class="hint" style="margin:0 0 10px">Import: pilih file <b>.xlsx</b> atau <b>.csv</b>. Unduh <b>📄 Format Excel</b> untuk contoh + panduan pengisian (sheet DATA & PANDUAN).</p>
+    <div id="formWrap" style="display:none">
+    <div class="koderow" style="margin-bottom:8px">
+      <label>Kode item<input id="fKode" placeholder="BRG-001"></label>
+      <label>Nama barang<input id="fNama" placeholder="cth: Kardus mie instan"></label>
+    </div>
+    <div style="margin-bottom:8px">
+      <label style="font-size:12px;color:var(--muted);display:block">🔍 Cari di master produk <span style="color:var(--muted)">(81 item dari spreadsheet kubikasi)</span>
+      <input id="fCari" placeholder="ketik kode / nama... cth: F8001 atau Sari" autocomplete="off" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:15px;margin-top:3px"></label>
+      <div id="hasilCari" class="carilist" style="display:none"></div>
+    </div>
+    <div class="formgrid">
+      <div><label>Panjang (cm)<input id="fP" type="number" inputmode="decimal" placeholder="60"></label></div>
+      <div><label>Lebar (cm)<input id="fL" type="number" inputmode="decimal" placeholder="40"></label></div>
+      <div><label>Tinggi (cm)<input id="fT" type="number" inputmode="decimal" placeholder="40"></label></div>
+      <div><label>Berat (kg)<input id="fB" type="number" inputmode="decimal" placeholder="isi → nentuin susunan"></label></div>
+      <div><label>Isi per Mbox (box)<input id="fPerMbox" type="number" inputmode="numeric" min="1" placeholder="cth: 24"></label></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-blue" id="btnAdd" style="flex:1;margin-top:10px">Simpan</button>
+      <button class="btn" id="btnCancel" style="flex:1;margin-top:10px;background:#e2e8f0;color:var(--ink)">Batal</button>
+    </div>
+    </div>
+    <div class="tblwrap"><table class="tbl">
+      <thead><tr><th>Kode</th><th>Nama barang</th><th class="num">P × L × T (cm)</th><th class="num">Berat</th><th class="num">Vol/pcs</th><th></th></tr></thead>
+      <tbody id="itemList"></tbody>
+    </table></div>
+  </div>
+
+  </div>
+  </div><!-- /pane1 -->
+  <div class="tabpane" id="pane2">
+  <div class="card">
+    <h2><span class="stepnum">2</span> Hitung volume</h2>
+    <h3 class="sub">📦 Barang yang mau dikirim</h3>
+    <select id="shipItemSel" class="vehsel"></select>
+    <button class="btn-blue" id="btnAddShip">＋ Tambah barang</button>
+    <div id="shipList" style="margin-top:10px"></div>
+    <h3 class="sub">🗺️ Rute pengiriman</h3>
+    <div class="koderow" style="margin-bottom:8px">
+      <label style="flex:1">Dari<input id="shipDari" placeholder="cth: Jakarta"></label>
+      <label style="flex:1">Ke<input id="shipKe" placeholder="cth: Surabaya"></label>
+    </div>
+    <h3 class="sub">🚚 Jenis kendaraan <span id="vehModeTag"></span></h3>
+    <select id="shipVeh" class="vehsel"></select>
+    <button class="btn-ghost" id="btnVehAuto" style="margin-top:8px">✨ Pilih otomatis sesuai barang</button>
+    <div id="vehPrev"></div>
+    <h3 class="sub">🧮 Cara susun</h3>
+    <div class="modeseg">
+      <button class="modebtn active" id="modeTangga" onclick="setMode('tangga')">🪜 Tangga<small>aman, gampang diikuti</small></button>
+      <button class="modebtn" id="modePenuh" onclick="setMode('penuh')">📦 Penuh<small>isi semaksimal mungkin</small></button>
+    </div>
+    <button class="btn-ghost" id="btnSaveCalc" style="width:100%;margin-top:10px">💾 Simpan perhitungan ini</button>
+    <div class="hint" id="saveCalcHint" style="display:none"></div>
+    <div id="shSelisih" style="display:none;margin-top:12px">
+      <div class="stats" style="margin-top:0">
+        <div class="stat"><small>📦 Total kubikasi barang</small><b id="slBarang">—</b></div>
+        <div class="stat"><small>🚚 Kubikasi kendaraan</small><b id="slVeh">—</b></div>
+        <div class="stat"><small>➖ Selisih</small><b id="slDiff">—</b></div>
+      </div>
+      <div id="slStatus"></div>
+      <div class="sub" style="margin-top:12px">📊 Perkiraan maks muat <span id="maxFitMode" style="color:var(--muted);font-weight:400;font-size:12px"></span></div>
+      <div class="stats" style="margin-top:0">
+        <div class="stat"><small>📦 Total barang dikirim</small><b id="mfTot">—</b></div>
+        <div class="stat"><small>🚚 Kapasitas kendaraan</small><b id="mfCap">—</b></div>
+        <div class="stat"><small>➖ Selisih pcs</small><b id="mfDiff">—</b></div>
+      </div>
+      <div id="mfNote"></div>
+    </div>
+    <div id="shipResult" style="display:none;margin-top:12px">
+      <canvas id="shipCanvas" width="900" height="520"></canvas>
+      <div class="legend" id="shLegend"></div>
+      <div class="barwrap"><div id="shFillbar"></div></div>
+      <div id="shRekom"></div>
+      <div class="stats">
+        <div class="stat"><small>Kendaraan</small><b id="shVeh">—</b></div>
+        <div class="stat"><small>Volume kendaraan</small><b id="shVehVol">—</b></div>
+        <div class="stat"><small>Terisi barang</small><b id="shFill">—</b></div>
+        <div class="stat"><small>Sisa ruang</small><b id="shLeft">—</b></div>
+        <div class="stat"><small>Utilisasi</small><b id="shPct">—</b></div>
+        <div class="stat"><small>Muat / tidak muat</small><b id="shFit">—</b></div>
+      </div>
+      <div id="shMsg"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-blue" id="btnPrint" style="margin-top:0">🖨️ Cetak / PDF</button>
+        <button class="btn-ghost" id="btnShare" style="margin-top:0;flex:1">📤 Bagikan + PDF</button>
+      </div>
+      <div id="shGuide"></div>
+      <p class="hint">Muat dari <b>depan ke belakang</b>. Mode 🪜 <b>Tangga</b>: tiap kolom ke belakang turun 1 tingkat (aman, gampang diikuti). Mode 📦 <b>Penuh</b>: tiap kolom setinggi mungkin (kapasitas maksimal).</p>
+    </div>
+  </div>
+
+  </div>
+  </div><!-- /pane2 -->
+  <div class="tabpane" id="pane3">
+  <div class="card">
+    <h2><span class="stepnum">3</span> Riwayat perhitungan</h2>
+    <div class="hint">Perhitungan yang disimpan bisa dibuka lagi — datanya otomatis masuk ke menu Hitung Volume.</div>
+    <div id="riwList" style="margin-top:10px"></div>
+  </div>
+  </div><!-- /pane3 -->
+
+</main>
+<footer>kubikasiku • hitung dulu, muat kemudian 😉</footer>
+<div id="printArea"></div>
+<script>
+"use strict";
+const MASTER=[["F8001", "Sari ASI", 49.3, 18.5, 15.0], ["F8002", "Sari Rapet", 49.3, 18.5, 15.0], ["F8003", "Sari Putih", 49.3, 18.5, 15.0], ["F8004", "Sari Langsing", 49.3, 18.5, 15.0], ["F8007", "Sari Imuno", 49.3, 18.5, 15.0], ["F8008", "Sari Oxyfit", 49.3, 18.5, 15.0], ["F9029", "FEMITIA SENSITEST STRIP", 35.0, 35.0, 53.0], ["F9030", "FEMITIA SENSITEST PACK", 57.0, 54.0, 42.0], ["F9001", "FEMITIA SensiStrip", 35.0, 35.0, 53.0], ["F9002", "FEMITIA SensiPack", 57.0, 54.0, 42.0], ["F9003", "FEMITIA SensiCare", 49.0, 30.0, 41.0], ["F9004", "FEMITIA SensiSoft size M", 36.0, 25.0, 22.0], ["F9004A", "FEMITIA SensiSoft Size S", 36.0, 25.0, 22.0], ["F9005", "FEMITIA SensiJect", 58.0, 44.0, 51.0], ["F9007", "FEMITIA SensiJect Duo", 58.0, 44.0, 51.0], ["F9008", "FEMITIA SENSIWASH 240", 31.9, 22.4, 20.7], ["F9008A", "FEMITIA SENSIWASH 240", 31.9, 22.4, 20.7], ["F9009", "FEMITIA SENSITIZER 240 ml", 31.9, 22.4, 20.7], ["F9009E", "FEMITIA SENSITIZER 240 ml", 31.9, 22.4, 20.7], ["F9010A", "FEMITIA SENSICLEAN 500", 31.9, 22.4, 20.7], ["F9015", "FEMITIA SENSITIZER 60 ML", 31.4, 23.9, 23.2], ["F9016", "Estiq Handsanitizer 60mL", 31.4, 23.9, 23.2], ["F9026", "Femitia Femiject Duo", 58.0, 42.0, 50.0], ["F9003A", "FEMITIA SensiCare", 49.0, 30.0, 41.0], ["F9010", "FEMITIA SENSICLEAN 500", 31.9, 22.4, 20.7], ["F8005", "SARI AYU", 49.3, 18.5, 15.0], ["F9015C", "FEMITIA SENSITIZER 60 ML", 31.4, 23.9, 23.2], ["F9017A", "Estiq Handsanitizer 240", 31.9, 22.4, 20.7], ["F9017C", "Estiq Handsanitizer 240", 31.9, 22.4, 20.7], ["F9027", "sensitizer sample PAPB 60ML", 32.0, 24.0, 22.0], ["F9003c", "FEMITIA SensiCare", 49.0, 30.0, 41.0], ["F9003C", "FEMITIA SENSICARE", 49.0, 30.0, 41.0], ["F2009", "BABYCARE OINTMENT", 29.7, 25.8, 14.8], ["F1001A8", "CYCLOFEM (Vial)", 42.5, 21.0, 24.7], ["F1001A5", "Cyclofem inj 0.5 ml", 42.5, 21.0, 24.7], ["F1001A5PE", "Cyclofem Inj Peru", 42.5, 21.0, 24.7], ["F1001A5TH", "Cyclofem Inj Thailand", 42.5, 21.0, 24.7], ["F1006A5GN5", "Triclofem Inj 1 ml", 42.5, 21.0, 24.7], ["F1006A5L", "Triclofem Inj 1 ml-116 L", 42.5, 21.0, 24.7], ["F1006A6", "Triclofem Inj 1 ml-116 L", 42.5, 21.0, 24.7], ["F1006A6GN5", "Triclofem Inj 1 ml", 42.5, 21.0, 24.7], ["F3018A1", "CYCLOGYNON (Tablet)", 55.0, 47.8, 53.0], ["F5001A", "Postinor 2", 40.0, 30.0, 33.0], ["F3034A", "GESTIAMIN-PLUZ (Tablet)", 39.7, 19.5, 17.0], ["F3026", "CALCID (Tablet)", 36.7, 27.0, 12.5], ["F3027", "CALCID PLUZ EFFERVESCENT", 26.7, 17.5, 14.4], ["F4003", "MINIVITA+DHA (Syrup)", 39.5, 30.0, 13.2], ["F3033", "MEGAVIT Z KAPLET", 39.7, 19.5, 17.0], ["F3032", "MEGA D 1000", 26.7, 16.7, 13.3], ["F3031", "MEGA D 4000", 39.7, 19.5, 17.0], ["F1008", "TIACINON (Injection)", 42.5, 36.0, 16.0], ["F1009", "METIAGIN (Injection)", 42.5, 36.0, 16.0], ["F1020", "OXYTOCIN", 37.0, 25.0, 22.0], ["F1022", "METHYLERGOMETRINE INJ", 37.0, 25.0, 22.0], ["F2004A1", "EUDYNA (Cream)", 29.7, 25.8, 14.8], ["F3008", "Magnidicon Tablet", 36.7, 27.0, 12.5], ["F3009", "MAKRO – B (Caplet)", 36.7, 27.0, 12.5], ["F3019A1", "PREGNABION (Tablet)", 26.7, 16.7, 13.3], ["F3021", "VOLDIAMER B6 (Tablet)", 26.7, 16.7, 13.3], ["F4001A1", "MAGNIDICON (Suspension)", 39.5, 30.0, 13.2], ["F2001A", "Thrombophob Gel 20gr", 29.7, 25.8, 14.8], ["F2002A", "THROMBOPHOB Ointment", 29.7, 25.8, 14.8], ["F2007A", "THROMBOGEL GEL", 30.3, 22.5, 12.0], ["F1017", "TIAVIT K  (INJECTION)", 42.5, 36.5, 16.0], ["F2006A", "CLONITIA (Cream)", 14.5, 11.0, 10.0], ["F2009A", "BABYCARE OINTMENT", 29.7, 25.8, 14.8], ["F9012", "FEMITIA SENSITIZER 500ml", 31.9, 22.4, 20.7], ["F9017", "ESTIQ HAND SANITIZER 240ml", 31.9, 22.4, 20.7], ["F9022", "ESTIQ HAND WASH 240ML", 31.9, 22.4, 20.7], ["F9023", "ESTIQ FLOOR CLEANER 500ML", 31.9, 22.4, 20.7], ["F6040", "SEPTANEST", 30.0, 17.0, 30.0], ["F6041", "LIGNOSPAN", 30.0, 17.0, 30.0], ["F9028", "Femitia Duoject", 58.0, 42.0, 50.0], ["F3038A", "Gestiamin Pluz", 39.7, 19.5, 17.0], ["F3029", "PIL KB 1 KOMBINASI", 47.0, 35.5, 34.7], ["F3029GK", "Pil KB 1 Kombinasi Tab", 47.0, 35.5, 34.7], ["F2010A", "Thrombovoren 20gr", 29.7, 25.8, 14.8], ["F1023GK", "MPA Injection 1 ml", 42.8, 22.8, 25.1], ["F1023", "MPA Injection 1 ml", 42.8, 22.8, 25.1], ["F9031", "FEMITIA Sensiscoon size M", 36.0, 25.0, 22.0], ["F9031A", "FEMITIA Sensiscoon Size S", 36.0, 25.0, 22.0]];
+/* ============ DATA KENDARAAN (ruang muat dalam, meter) ============ */
+const VEHICLES = [
+  {id:"pickup",     name:"Pick Up Bak",              dims:[2.40,1.60,1.25], payload:1,    body:"bak",
+   note:"Bak 240 × 160 cm, tinggi muat efektif 125 cm • maks ±1 ton"},
+  {id:"pickupbox",  name:"Pick Up Box",              dims:[2.35,1.60,1.25], payload:1,    body:"box",
+   note:"Box 235 × 160 × 125 cm • maks ±1 ton"},
+  {id:"blindvan",   name:"Blind Van",                dims:[2.20,1.35,1.30], payload:0.7,  body:"box",
+   note:"Ruang 220 × 135 × 130 cm • maks ±0,7 ton"},
+  {id:"cde",        name:"Engkel Bak (CDE)",         dims:[3.20,1.70,1.80], payload:2.5,  body:"bak",
+   note:"Bak 320 × 170 × 180 cm • maks ±2,5 ton"},
+  {id:"cdebox",     name:"Engkel Box (CDE)",         dims:[3.20,1.70,1.70], payload:2.2,  body:"box",
+   note:"Box 320 × 170 × 170 cm • maks ±2,2 ton"},
+  {id:"cdd",        name:"CDD Bak",                  dims:[4.40,2.00,2.00], payload:5,    body:"bak",
+   note:"Bak 440 × 200 × 200 cm • maks ±5 ton"},
+  {id:"cddbox",     name:"CDD Box",                  dims:[4.40,2.00,1.90], payload:5,    body:"box",
+   note:"Box 440 × 200 × 190 cm • maks ±5 ton"},
+  {id:"cddlong",    name:"CDD Long Bak",             dims:[5.30,2.00,2.10], payload:6,    body:"bak",
+   note:"Bak 530 × 200 × 210 cm • maks ±6 ton"},
+  {id:"cddlongbox", name:"CDD Long Box",             dims:[5.30,2.00,2.10], payload:6,    body:"box",
+   note:"Box 530 × 200 × 210 cm • maks ±6 ton"},
+  {id:"fuso",       name:"Fuso Bak",                 dims:[6.10,2.30,2.20], payload:8,    body:"bak",
+   note:"Bak 610 × 230 × 220 cm • maks ±8 ton"},
+  {id:"fusobox",    name:"Fuso Box",                 dims:[6.10,2.30,2.35], payload:8,    body:"box",
+   note:"Box 610 × 230 × 235 cm • maks ±8 ton"},
+  {id:"tronton",    name:"Tronton Bak",              dims:[9.40,2.20,2.30], payload:20,   body:"bak",
+   note:"Bak 940 × 220 × 230 cm • maks ±20 ton"},
+  {id:"trontonbox", name:"Tronton Box",              dims:[9.50,2.45,2.60], payload:20,   body:"box",
+   note:"Box 950 × 245 × 260 cm • maks ±20 ton"},
+  {id:"wingbox",    name:"Wing Box",                 dims:[9.40,2.40,2.40], payload:20,   body:"box",
+   note:"Box 940 × 240 × 240 cm • maks ±20 ton"},
+  {id:"builtup45",  name:"Box Built-Up 45 CBM",      dims:[9.00,2.40,2.10], payload:15,   body:"box",
+   note:"Box 900 × 240 × 210 cm • maks ±15 ton"},
+  {id:"trailer20",  name:"Trailer 20 ft",            dims:[6.20,2.40,2.40], payload:22,   body:"bak",
+   note:"Flatbed 620 × 240 cm, tinggi muat 240 cm • maks ±22 ton"},
+  {id:"trailer40",  name:"Trailer 40 ft",            dims:[12.20,2.40,2.40],payload:30,   body:"bak",
+   note:"Flatbed 1220 × 240 cm, tinggi muat 240 cm • maks ±30 ton"},
+  {id:"c20",        name:"Kontainer 20 ft",          dims:[5.90,2.35,2.39], payload:22,   body:"kontainer",
+   note:"Dalam 590 × 235 × 239 cm • maks ±22 ton"},
+  {id:"c40",        name:"Kontainer 40 ft",          dims:[12.03,2.35,2.39],payload:27,   body:"kontainer",
+   note:"Dalam 1203 × 235 × 239 cm • maks ±27 ton"},
+  {id:"c40hc",      name:"Kontainer 40 ft High Cube",dims:[12.03,2.35,2.70],payload:27,   body:"kontainer",
+   note:"Dalam 1203 × 235 × 270 cm • maks ±27 ton"},
+  {id:"c45hc",      name:"Kontainer 45 ft High Cube",dims:[13.56,2.35,2.70],payload:30,   body:"kontainer",
+   note:"Dalam 1356 × 235 × 270 cm • maks ±30 ton"},
+];
+VEHICLES.forEach(v=>{ v.vol = v.dims[0]*v.dims[1]*v.dims[2]; });
+
+/* ============ GAMBAR SVG TIAP JENIS KENDARAAN ============ */
+function svgVeh(v){
+  const id=v.id;
+  const WHEELS={"pickup":[34,120],"pickupbox":[34,120],"blindvan":[36,150],"cde":[34,120,175],"cdebox":[34,120,175],
+    "cdd":[34,120,175],"cddbox":[34,120,175],
+    "cddlong":[34,115,178],"cddlongbox":[34,115,178],"fuso":[34,110,178],"fusobox":[34,110,178],
+    "tronton":[32,100,150,192],"trontonbox":[32,100,150,192],"wingbox":[32,100,150,192],
+    "builtup45":[32,100,150,192],"trailer20":[32,110,160,196],"trailer40":[32,100,140,176,202],
+    "c20":[32,110,160,196],"c40":[32,100,140,176,202],"c40hc":[32,100,140,176,202],"c45hc":[32,100,140,176,202]};
+  const KONT_COLOR={"c20":["#b91c1c","#dc2626"],"c40":["#1d4ed8","#3b82f6"],"c40hc":["#c2410c","#ea580c"],"c45hc":["#0f766e","#14b8a8"]};
+  const gid="g"+id;
+  let s=`<svg viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<defs>
+    <linearGradient id="${gid}cab" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="${gid}bak" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#92400e"/>
+    </linearGradient>
+    <linearGradient id="${gid}box" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="${gid}glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e0f2fe"/><stop offset="1" stop-color="#7dd3fc"/>
+    </linearGradient>
+  </defs>`;
+  // bayangan tanah
+  s+=`<ellipse cx="110" cy="80" rx="102" ry="4.5" fill="#0f172a" opacity=".10"/>`;
+  // sasis
+  s+=`<rect x="8" y="62" width="204" height="6" rx="2" fill="#334155"/>`;
+  const wheel=(x)=>`<g><circle cx="${x}" cy="68" r="11" fill="#1f2937"/><circle cx="${x}" cy="68" r="5.5" fill="#9ca3af"/><circle cx="${x}" cy="68" r="2.2" fill="#4b5563"/></g>`;
+  const wheels=()=>WHEELS[id].map(wheel).join("");
+
+  if(id==="pickup"||id==="pickupbox"||id==="blindvan"){
+    // --- mobil kecil ---
+    const cabX=10,cabW=30;
+    // bak / bodi
+    if(id==="pickup"){
+      const bx=cabX+cabW+2, bw=206-bx;
+      s+=`<rect x="${bx}" y="40" width="${bw}" height="22" rx="2" fill="url(#${gid}bak)"/>`;
+      for(let x=bx+8;x<bx+bw-4;x+=11) s+=`<rect x="${x}" y="40" width="3" height="22" fill="#78350f" opacity=".5"/>`;
+      s+=`<rect x="${bx}" y="36" width="${bw}" height="5" rx="2" fill="#92400e"/>`;
+      s+=`<rect x="${bx+4}" y="44" width="${bw-8}" height="14" rx="1" fill="#451a03" opacity=".35"/>`;
+    }else{
+      const bx=cabX+cabW+2, bw=206-bx;
+      s+=`<rect x="${bx}" y="20" width="${bw}" height="42" rx="3" fill="url(#${gid}box)" stroke="#94a3b8" stroke-width="1.5"/>`;
+      s+=`<rect x="${bx+bw-34}" y="20" width="34" height="42" fill="#e2e8f0" opacity=".6"/>`;
+      s+=`<line x1="${bx+bw-34}" y1="20" x2="${bx+bw-34}" y2="62" stroke="#94a3b8" stroke-width="1.5"/>`;
+      s+=`<rect x="${bx+10}" y="24" width="${bw-58}" height="4" rx="2" fill="#94a3b8" opacity=".5"/>`;
+    }
+    // kabin
+    s+=`<path d="M${cabX} 62 L${cabX} 40 Q${cabX} 36 ${cabX+4} 36 L${cabX+16} 36 L${cabX+24} 24 Q${cabX+25} 22 ${cabX+27} 22 L${cabX+cabW} 22 L${cabX+cabW} 62 Z" fill="url(#${gid}cab)"/>`;
+    s+=`<polygon points="${cabX+17},34 ${cabX+23},24 ${cabX+cabW-2},24 ${cabX+cabW-2},34" fill="url(#${gid}glass)"/>`;
+    s+=`<rect x="${cabX+4}" y="40" width="10" height="14" rx="2" fill="#1e3a8a" opacity=".35"/>`;
+    s+=`<rect x="${cabX}" y="52" width="6" height="5" rx="1" fill="#fef9c3"/>`;
+    s+=`<rect x="${cabX-3}" y="58" width="${cabW+5}" height="5" rx="2" fill="#475569"/>`;
+    s+=`<rect x="${cabX+cabW-1}" y="30" width="4" height="7" rx="1.5" fill="#1e3a8a"/>`;
+  } else if(v.body==="bak"){
+    // --- truk bak ---
+    const cabW=38, bedX=12+cabW, bedW=206-bedX;
+    s+=`<rect x="${bedX}" y="38" width="${bedW}" height="24" rx="2" fill="url(#${gid}bak)"/>`;
+    for(let x=bedX+9;x<bedX+bedW-5;x+=13) s+=`<rect x="${x}" y="38" width="3.5" height="24" fill="#78350f" opacity=".55"/>`;
+    s+=`<rect x="${bedX}" y="34" width="${bedW}" height="5" rx="2" fill="#92400e"/>`;
+    for(let x=bedX+6;x<bedX+bedW;x+=26) s+=`<rect x="${x}" y="28" width="4" height="10" rx="1" fill="#78350f"/>`;
+    s+=`<rect x="${bedX}" y="58" width="${bedW}" height="4" fill="#451a03" opacity=".5"/>`;
+    // kabin truk
+    s+=`<rect x="10" y="28" width="${cabW}" height="34" rx="5" fill="url(#${gid}cab)"/>`;
+    s+=`<polygon points="30,32 44,32 44,44 30,44" fill="url(#${gid}glass)"/>`;
+    s+=`<polygon points="32,33 40,33 40,43 32,43" fill="#ffffff" opacity=".35"/>`;
+    s+=`<rect x="14" y="32" width="12" height="12" rx="2" fill="url(#${gid}glass)"/>`;
+    s+=`<line x1="30" y1="46" x2="30" y2="62" stroke="#1e3a8a" stroke-width="1.5" opacity=".6"/>`;
+    s+=`<rect x="33" y="48" width="7" height="3" rx="1.5" fill="#dbeafe"/>`;
+    s+=`<rect x="10" y="50" width="7" height="6" rx="1.5" fill="#fef9c3"/>`;
+    s+=`<rect x="10" y="58" width="12" height="4" rx="1" fill="#172554"/>`;
+    s+=`<rect x="6" y="60" width="${cabW+2}" height="5" rx="2" fill="#475569"/>`;
+    s+=`<rect x="46" y="24" width="5" height="8" rx="2" fill="#1e3a8a"/>`;
+    s+=`<rect x="14" y="62" width="10" height="3" fill="#334155"/>`;
+  } else if(v.body==="box"){
+    // --- truk box ---
+    const cabW=38, boxX=12+cabW, boxW=206-boxX, boxH=/wing|tronton|builtup/.test(id)?46:42, boxY=62-boxH;
+    s+=`<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${boxH}" rx="2" fill="url(#${gid}box)" stroke="#94a3b8" stroke-width="1.8"/>`;
+    for(let x=boxX+10;x<boxX+boxW-6;x+=14) s+=`<rect x="${x}" y="${boxY+3}" width="3" height="${boxH-6}" fill="#94a3b8" opacity=".35"/>`;
+    s+=`<rect x="${boxX}" y="${boxY}" width="${boxW}" height="5" rx="2" fill="#cbd5e1"/>`;
+    // pintu belakang
+    const dx=boxX+boxW-30;
+    s+=`<line x1="${dx}" y1="${boxY+4}" x2="${dx}" y2="${boxY+boxH-3}" stroke="#64748b" stroke-width="1.8"/>`;
+    s+=`<line x1="${dx+8}" y1="${boxY+8}" x2="${dx+8}" y2="${boxY+boxH-8}" stroke="#64748b" stroke-width="2.5"/>`;
+    s+=`<line x1="${dx+20}" y1="${boxY+8}" x2="${dx+20}" y2="${boxY+boxH-8}" stroke="#64748b" stroke-width="2.5"/>`;
+    s+=`<rect x="${dx+6}" y="${boxY+boxH/2-4}" width="5" height="8" rx="1" fill="#475569"/>`;
+    s+=`<rect x="${dx+18}" y="${boxY+boxH/2-4}" width="5" height="8" rx="1" fill="#475569"/>`;
+    if(/wing/.test(id)){
+      s+=`<polygon points="${boxX},${boxY} ${boxX+boxW},${boxY} ${boxX+boxW-14},${boxY-8} ${boxX+14},${boxY-8}" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>`;
+      s+=`<line x1="${boxX+boxW/2}" y1="${boxY}" x2="${boxX+boxW/2}" y2="${boxY-8}" stroke="#94a3b8" stroke-width="1.2"/>`;
+    }
+    // kabin truk
+    s+=`<rect x="10" y="28" width="${cabW}" height="34" rx="5" fill="url(#${gid}cab)"/>`;
+    s+=`<polygon points="30,32 44,32 44,44 30,44" fill="url(#${gid}glass)"/>`;
+    s+=`<polygon points="32,33 40,33 40,43 32,43" fill="#ffffff" opacity=".35"/>`;
+    s+=`<rect x="14" y="32" width="12" height="12" rx="2" fill="url(#${gid}glass)"/>`;
+    s+=`<rect x="10" y="50" width="7" height="6" rx="1.5" fill="#fef9c3"/>`;
+    s+=`<rect x="6" y="60" width="${cabW+2}" height="5" rx="2" fill="#475569"/>`;
+    s+=`<rect x="46" y="24" width="5" height="8" rx="2" fill="#1e3a8a"/>`;
+  } else {
+    // --- kontainer ---
+    const cc=KONT_COLOR[id]||["#b91c1c","#dc2626"];
+    const boxX=54, boxW=152, boxY=20, boxH=42;
+    s+=`<defs><linearGradient id="${gid}kont" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${cc[1]}"/><stop offset="1" stop-color="${cc[0]}"/></linearGradient></defs>`;
+    s+=`<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${boxH}" rx="2" fill="url(#${gid}kont)"/>`;
+    for(let x=boxX+5;x<boxX+boxW-3;x+=9) s+=`<rect x="${x}" y="${boxY+2}" width="4" height="${boxH-4}" fill="#000000" opacity=".18"/>`;
+    s+=`<rect x="${boxX}" y="${boxY}" width="${boxW}" height="4" fill="#ffffff" opacity=".25"/>`;
+    s+=`<rect x="${boxX}" y="${boxY+boxH-4}" width="${boxW}" height="4" fill="#000000" opacity=".25"/>`;
+    // pintu + lock rod
+    s+=`<rect x="${boxX+boxW-26}" y="${boxY+3}" width="24" height="${boxH-6}" fill="#000000" opacity=".15"/>`;
+    for(const lx of [boxX+boxW-21, boxX+boxW-14, boxX+boxW-7]){
+      s+=`<line x1="${lx}" y1="${boxY+5}" x2="${lx}" y2="${boxY+boxH-5}" stroke="#e5e7eb" stroke-width="2"/>`;
+      s+=`<rect x="${lx-2.5}" y="${boxY+boxH/2-3}" width="5" height="6" rx="1" fill="#9ca3af"/>`;
+    }
+    // corner casting
+    for(const cx of [boxX,boxX+boxW-6]) for(const cy of [boxY,boxY+boxH-6])
+      s+=`<rect x="${cx}" y="${cy}" width="6" height="6" fill="#1f2937" opacity=".7"/>`;
+    // kabin
+    s+=`<rect x="10" y="30" width="36" height="32" rx="5" fill="url(#${gid}cab)"/>`;
+    s+=`<polygon points="28,34 42,34 42,45 28,45" fill="url(#${gid}glass)"/>`;
+    s+=`<rect x="14" y="34" width="11" height="11" rx="2" fill="url(#${gid}glass)"/>`;
+    s+=`<rect x="10" y="50" width="7" height="6" rx="1.5" fill="#fef9c3"/>`;
+    s+=`<rect x="6" y="60" width="38" height="5" rx="2" fill="#475569"/>`;
+    s+=`<rect x="44" y="26" width="5" height="8" rx="2" fill="#1e3a8a"/>`;
+    // kaki trailer
+    s+=`<rect x="70" y="62" width="5" height="8" fill="#4b5563"/><rect x="66" y="70" width="13" height="3" fill="#4b5563"/>`;
+  }
+  s+=wheels();
+  s+=`</svg>`;
+  return s;
+}
+/* ============ STATE ============ */
+const PALETTE = ["#3b82f6","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a8","#f97316","#6366f1","#84cc16"];
+let items = [];       // {nama,p,l,t(m),berat(kg),qty,color}
+let vehId = "cddbox";
+/* ===== state sinkronisasi cloud ===== */
+let cloudToken = "";   // diisi dari localStorage saat boot
+let cloudUser = "";
+let cloudBase = 0;     // updated_at server terakhir yang disinkron
+let pushTimer = null;
+let syncing = false;   // true saat menerapkan data dari server (jangan push balik)
+const $ = id=>document.getElementById(id);
+
+function save(){ try{localStorage.setItem("kubikasiku", JSON.stringify({items,vehId,ship,packMode,vehAuto,shipDari,shipKe}));}catch(e){} if(!syncing) cloudPushSoon(); }
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem("kubikasiku"));
+    if(d){ items=d.items||[]; vehId=d.vehId||"cddbox"; ship=d.ship||{}; packMode=d.packMode||"tangga"; vehAuto=d.vehAuto!==false; shipDari=d.shipDari||""; shipKe=d.shipKe||""; }
+  }catch(e){}
+  if(!VEHICLES.find(v=>v.id===vehId)) vehId="cddbox"; // migrasi: id kendaraan lama
+  // migrasi: qty pindah dari data barang ke data hitung
+  items.forEach((it,i)=>{ if(it.qty!=null){ if(ship[i]==null) ship[i]={q:it.qty,m:"mbox"}; delete it.qty; } });
+  // migrasi format lama -> {q,m}; yang tidak dicentang dibuang
+  Object.keys(ship).forEach(k=>{
+    const e=ship[k];
+    if(typeof e==="number") ship[k]={q:Math.max(1,e),m:"mbox"};
+    else if(e&&typeof e==="object"&&e.m==null){ if(e.on===false) delete ship[k]; else ship[k]={q:Math.max(1,parseInt(e.qty)||1),m:"mbox"}; }
+    if(ship[k]&&ship[k].m==null) ship[k].m="mbox";
+  });
+  if(!items.length){
+    items=[{kode:"BRG-001",nama:"Kardus mie instan",p:0.60,l:0.40,t:0.40,berat:12,perMbox:1,color:PALETTE[0]}];
+    ship={0:{q:20,m:"mbox"}};
+  }
+}
+
+/* ============ MODE SUSUN: tangga / penuh ============ */
+let packMode="tangga";
+function setMode(m){
+  packMode=m;
+  $("modeTangga").classList.toggle("active",m==="tangga");
+  $("modePenuh").classList.toggle("active",m==="penuh");
+  save(); hitungOtomatis();
+}
+/* ============ AUTO-PILIH KENDARAAN ============ */
+let vehAuto=true;
+const TOL_M3=5; // toleransi: kubikasi kendaraan maks = total barang + 5 m³
+function volCands(list){
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totBerat=list.reduce((s,it)=>s+(it.berat||0)*it.qty,0);
+  const cands=VEHICLES.filter(vv=>vv.vol>=totVol&&totBerat<=vv.payload*1000).sort((a,b)=>a.vol-b.vol);
+  return {totVol,totBerat,cands};
+}
+function autoPickVeh(list){
+  const {cands,totVol}=volCands(list);
+  if(!cands.length) return false;
+  const inTol=cands.filter(vv=>vv.vol<=totVol+TOL_M3);
+  const pool=inTol.length?inTol:[cands[0]];
+  // utamakan yang geometrisnya juga muat semua; kalau tidak ada, tetap yang terkecil
+  const pick=pool.find(vv=>packItems(list,vv).notFit===0)||pool[0];
+  if(pick.id!==vehId){ vehId=pick.id; return true; }
+  return false;
+}
+function updateVehModeTag(){
+  const t=$("vehModeTag"); if(!t) return;
+  t.innerHTML = vehAuto
+    ? `<span style="font-size:11px;color:var(--green);font-weight:700">✨ otomatis</span>`
+    : `<span style="font-size:11px;color:var(--amber);font-weight:700">👆 manual</span>`;
+}
+/* kapasitas kendaraan dalam pcs untuk komposisi barang yang sama (tambah komposisi sampai jenuh) */
+function maxMixFit(list,v){
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totQty=list.reduce((s,it)=>s+it.qty,0);
+  if(totVol<=0||totQty<=0) return null;
+  const scaled=k=>list.map(it=>Object.assign({},it,{qty:it.qty*k}));
+  const placedN=k=>packItems(scaled(k),v).placed.length;
+  const p1=placedN(1), MAXU=8000;
+  let k=1, prev=p1, guard=0, capped=false;
+  if(p1>=totQty){
+    while(guard++<64){
+      const nk=k*2, avail=nk*totQty;
+      if(avail>MAXU){ capped=true; break; }
+      const p=placedN(nk);
+      if(p<avail){ prev=p; break; } /* jenuh — nilai pasti */
+      if(p<=prev){ break; }
+      prev=p; k=nk;
+    }
+  }
+  return {cap:prev, full:p1>=totQty, capped};
+}
+/* ============ MENU 2: PILIH BARANG + KENDARAAN ============ */
+let ship={}; // idx -> {q:qty, m:"box"|"mbox"}
+let shipDari="", shipKe="";
+function renderVehSelect(){
+  const s=$("shipVeh"); s.innerHTML="";
+  VEHICLES.forEach(v=>{
+    const o=document.createElement("option");
+    o.value=v.id; o.textContent=v.name+" — "+v.vol.toFixed(2).replace(".",",")+" m³";
+    s.appendChild(o);
+  });
+  s.value=vehId;
+  s.onchange=()=>{ vehId=s.value; vehAuto=false; save(); updateVehModeTag(); renderVehPrev(); hitungOtomatis(); };
+  renderVehPrev();
+}
+function renderVehPrev(){
+  const v=veh();
+  $("vehPrev").innerHTML=`<div class="vehprevbox">${svgVeh(v)}<div>
+    <div class="vname">${v.name}</div><div class="vdim">${v.note}</div>
+    <div class="vvol">📦 ${v.vol.toFixed(2).replace(".",",")} m³ &nbsp;•&nbsp; maks ±${(v.payload*1000).toLocaleString("id-ID")} kg</div>
+  </div></div>`;
+}
+function renderShipSel(){
+  const s=$("shipItemSel"); s.innerHTML="";
+  const ph=document.createElement("option"); ph.value=""; ph.textContent="— Pilih barang —"; s.appendChild(ph);
+  items.forEach((it,i)=>{
+    if(ship[i]!=null) return;
+    const o=document.createElement("option"); o.value=i;
+    o.textContent=`${it.kode?it.kode+" — ":""}${it.nama} (${Math.round(it.p*100)}×${Math.round(it.l*100)}×${Math.round(it.t*100)} cm${it.perMbox>1?", "+it.perMbox+" box/Mbox":""})`;
+    s.appendChild(o);
+  });
+}
+function shipConv(q,m,per){
+  q=Math.max(1,parseInt(q)||1);
+  if(m==="box") return "= "+Math.ceil(q/per).toLocaleString("id-ID")+" Mbox";
+  return "= "+(q*per).toLocaleString("id-ID")+" box";
+}
+function renderShipList(){
+  renderShipSel();
+  const el=$("shipList"); el.innerHTML="";
+  if(!items.length){ el.innerHTML='<p class="hint">Belum ada barang — isi dulu di menu 1.</p>'; return; }
+  const keys=Object.keys(ship).map(Number).filter(k=>items[k]);
+  if(!keys.length){ el.innerHTML='<p class="hint">Pilih barang di atas, lalu tulis jumlahnya.</p>'; return; }
+  keys.forEach(i=>{
+    const it=items[i], e=ship[i]||{q:1,m:"mbox"};
+    if(e.m==null) e.m="mbox";
+    const per=it.perMbox>1?it.perMbox:1;
+    const r=document.createElement("div"); r.className="shiprow";
+    r.innerHTML=`<div class="itemswatch" style="background:${it.color}"></div>
+      <div style="flex:1;min-width:0"><b>${it.kode||""}</b> ${it.nama}<br>
+      <span style="color:var(--muted);font-size:12px">${Math.round(it.p*100)}×${Math.round(it.l*100)}×${Math.round(it.t*100)} cm • ${fmtM3(it.p*it.l*it.t)}/Mbox</span></div>
+      <div style="text-align:center;flex:none">
+        ${per>1?`<div class="segmode"><button data-m="box" class="${e.m==="box"?"on":""}">Box</button><button data-m="mbox" class="${e.m!=="box"?"on":""}">Mbox</button></div>`:""}
+        <label style="font-size:12px;color:var(--muted)">Qty<br><input type="number" class="shipqty" min="1" value="${e.q}"></label>
+        ${per>1?`<div class="convline">${shipConv(e.q,e.m,per)}</div>`:""}
+      </div>
+      <button class="itemdel" title="hapus">✕</button>`;
+    const qi=r.querySelector(".shipqty");
+    qi.onchange=()=>{ ship[i].q=Math.max(1,parseInt(qi.value)||1); save(); renderShipList(); hitungOtomatis(); };
+    r.querySelectorAll(".segmode button").forEach(b=>{
+      b.onclick=()=>{ ship[i].m=b.dataset.m; save(); renderShipList(); hitungOtomatis(); };
+    });
+    r.querySelector(".itemdel").onclick=()=>{ delete ship[i]; save(); renderShipList(); hitungOtomatis(); };
+    el.appendChild(r);
+  });
+}
+$("btnAddShip").onclick=()=>{
+  const v=$("shipItemSel").value;
+  if(v===""||ship[v]!=null||!items[+v]) return;
+  ship[v]={q:1,m:"mbox"}; save(); renderShipList(); hitungOtomatis();
+};
+function goTab(n){
+  [1,2,3].forEach(i=>{
+    $("tab"+i).classList.toggle("active", i===n);
+    $("pane"+i).classList.toggle("active", i===n);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+const veh = ()=>VEHICLES.find(v=>v.id===vehId);
+
+/* ============ CARI MASTER PRODUK (dari spreadsheet) ============ */
+$("fCari").addEventListener("input",()=>{
+  const q=$("fCari").value.trim().toLowerCase(), box=$("hasilCari");
+  if(q.length<2){ box.style.display="none"; return; }
+  const hit=MASTER.filter(m=>(m[0]+" "+m[1]).toLowerCase().includes(q)).slice(0,20);
+  if(!hit.length){ box.style.display="none"; return; }
+  box.innerHTML="";
+  hit.forEach(m=>{
+    const r=document.createElement("div"); r.className="carirow";
+    r.innerHTML=`<b>${m[0]}</b> — ${m[1]} <span style="color:var(--muted)">${m[2]}×${m[3]}×${m[4]} cm</span>`;
+    r.onclick=()=>{
+      $("fKode").value=m[0]; $("fNama").value=m[1];
+      $("fP").value=m[2]; $("fL").value=m[3]; $("fT").value=m[4];
+      $("fB").value=""; box.style.display="none"; $("fCari").value="";
+      $("fB").focus();
+    };
+    box.appendChild(r);
+  });
+  box.style.display="block";
+});
+
+/* ============ BARANG UI ============ */
+function fmtVol(m3){ return m3>=10? m3.toFixed(1)+" m³" : m3.toFixed(2)+" m³"; }
+function fmtM3(v){ return v.toFixed(3).replace(".",",")+" m³"; }
+function renderItems(){
+  const list=$("itemList"); list.innerHTML="";
+  items.forEach((it,i)=>{
+    const vpcs=it.p*it.l*it.t;
+    const r=document.createElement("tr");
+    r.innerHTML=`<td><span class="kodepill">${it.kode||"-"}</span></td>
+      <td><b>${it.nama}</b>${it.perMbox>1?`<br><span style="color:var(--muted);font-size:12px">${it.perMbox} box/Mbox</span>`:""}</td>
+      <td class="num">${Math.round(it.p*100)} × ${Math.round(it.l*100)} × ${Math.round(it.t*100)}</td>
+      <td class="num">${it.berat?it.berat+" kg":"-"}</td>
+      <td class="num">${fmtM3(vpcs)}</td>
+      <td><button class="itemdel">✕</button></td>`;
+    r.querySelector(".itemdel").onclick=()=>{
+      items.splice(i,1);
+      const ns={}; Object.keys(ship).forEach(k=>{ k=+k; if(k<i)ns[k]=ship[k]; else if(k>i)ns[k-1]=ship[k]; });
+      ship=ns;
+      save(); renderItems(); renderShipList(); hitungOtomatis();
+    };
+    list.appendChild(r);
+  });
+  if(!items.length) list.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px">Belum ada barang. Tekan ＋ Tambah barang.</td></tr>`;
+}
+$("btnShowForm").onclick=()=>{
+  const w=$("formWrap"), open=w.style.display==="none";
+  w.style.display=open?"block":"none";
+  if(open) $("fKode").focus();
+};
+$("btnCancel").onclick=()=>{ $("formWrap").style.display="none"; };
+$("btnAdd").onclick=()=>{
+  const kode=$("fKode").value.trim()||("BRG-"+String(items.length+1).padStart(3,"0"));
+  const nama=$("fNama").value.trim()||("Barang "+(items.length+1));
+  const p=parseFloat($("fP").value), l=parseFloat($("fL").value),
+        t=parseFloat($("fT").value), b=parseFloat($("fB").value)||0,
+        pm=Math.max(1,parseInt($("fPerMbox").value)||1);
+  if(!(p>0&&l>0&&t>0)){ alert("Isi panjang, lebar, dan tinggi barang (cm) dulu."); return; }
+  items.push({kode,nama,p:p/100,l:l/100,t:t/100,berat:b,perMbox:pm,color:PALETTE[items.length%PALETTE.length]});
+  $("fKode").value="";$("fNama").value="";$("fP").value="";$("fL").value="";$("fT").value="";$("fB").value="";$("fPerMbox").value="";$("fCari").value="";
+  $("formWrap").style.display="none";
+  save(); renderItems(); renderShipList(); hitungOtomatis();
+};
+
+/* ============ PACKING: depan → belakang (tangga), yang berat di bawah, ringan di atas ============ */
+function packItems(list,v){
+  const W=v.dims[0], L=v.dims[1], H=v.dims[2], eps=1e-6;
+  const units=[];
+  for(const it of list) for(let k=0;k<it.qty;k++)
+    units.push({w:it.p,l:it.l,h:it.t,b:it.berat||0,color:it.color,nama:it.nama,kode:it.kode});
+  units.sort((a,b)=>(b.b-a.b)||(b.w*b.l*b.h-a.w*a.l*a.h)); // berat dulu → di bawah
+  const placed=[]; let notFit=0, fitVol=0;
+  if(!units.length) return {placed,notFit,fitVol,steps:[]};
+  const gBase=Math.max(1,...units.map(u=>Math.floor(H/u.h+eps)));
+  const steps=[]; let curX=0, stepIdx=0;
+  const newStep=(u)=>{
+    if(curX+u.w>W+eps) return null;
+    // mode tangga: tiap kolom ke belakang turun 1 tingkat; mode penuh: setinggi mungkin
+    const maxNl = packMode==="tangga" ? Math.max(1,gBase-stepIdx) : gBase;
+    const st={n:steps.length+1,x0:curX,w:u.w,l:u.l,layers:[],maxNl:maxNl};
+    curX+=u.w; stepIdx++; steps.push(st); return st;
+  };
+  const put=(u,st,li,lr,y)=>{
+    placed.push({x:st.x0,y:y,z:lr.z,w:u.w,l:u.l,h:u.h,color:u.color,nama:u.nama,kode:u.kode,b:u.b,step:st.n,li:li});
+    fitVol+=u.w*u.l*u.h;
+  };
+  const tryPlaceLayer=(u,st,li)=>{
+    // coba lapis li yang sudah ada di step ini
+    if(li<st.layers.length){
+      const lr=st.layers[li];
+      if(lr.y+u.l<=L+eps && lr.z+Math.max(lr.h,u.h)<=H+eps){
+        put(u,st,li,lr,lr.y); lr.y+=u.l; lr.h=Math.max(lr.h,u.h); return true;
+      }
+      return false;
+    }
+    // lapis baru di step ini
+    if(li===st.layers.length && li<st.maxNl){
+      const prev=st.layers[st.layers.length-1];
+      const zTop=prev?prev.z+prev.h:0;
+      if(zTop+u.h<=H+eps){
+        const lr={z:zTop,y:u.l,h:u.h}; st.layers.push(lr);
+        put(u,st,li,lr,0); return true;
+      }
+    }
+    return false;
+  };
+  // cek stabilitas tiap kolom: tinggi tumpukan maks 2x sisi tapak terkecil
+  const wobble=(st)=>{
+    let topH=0, baseMin=Infinity;
+    for(const lr of st.layers){
+      topH=Math.max(topH, lr.z+lr.h);
+      baseMin=Math.min(baseMin, st.w, lr.y||st.l);
+    }
+    return topH>2*baseMin+eps ? {topH,baseMin} : null;
+  };
+  for(const u of units){
+    if(u.h>H+eps){ notFit++; continue; }
+    const cands=[{w:u.w,l:u.l}];
+    if(Math.abs(u.w-u.l)>eps) cands.push({w:u.l,l:u.w});
+    let done=false;
+    for(const c of cands){
+      if(c.w>W+eps||c.l>L+eps) continue;
+      const uu=Object.assign({},u,{w:c.w,l:c.l});
+      // UTAMA ANTI ROBOH: isi lapis per lapis — sebar ke lantai dulu (depan→belakang),
+      // baru tumpuk ke atas kalau lantai sudah penuh
+      for(let li=0;!done;li++){
+        let lim=0;
+        for(const st of steps){
+          if(uu.w>st.w+eps||uu.l>st.l+eps) continue;
+          lim=Math.max(lim,st.maxNl);
+          if(tryPlaceLayer(uu,st,li)){ done=true; break; }
+        }
+        if(done||li>lim) break;
+        if(li===0){
+          const st=newStep(uu); // lantai penuh → buka kolom baru ke belakang
+          if(st) done=tryPlaceLayer(uu,st,0);
+          // kalau x juga penuh, lanjut ke li=1 (tumpuk ke atas)
+        }
+      }
+      if(done) break;
+    }
+    if(!done) notFit++;
+  }
+  const unstable=[];
+  steps.forEach(s=>{ const w=wobble(s); if(w) unstable.push({n:s.n,topH:w.topH,base:w.baseMin}); });
+  return {placed,notFit,fitVol,steps,unstable};
+}
+function fillStats(p,v,list,r){
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totBerat=list.reduce((s,it)=>s+(it.berat||0)*it.qty,0);
+  const pct=v.vol>0? r.fitVol/v.vol*100 : 0;
+  $(p+"Veh").textContent=v.name;
+  $(p+"VehVol").textContent=fmtVol(v.vol)+` (${v.dims.map(d=>(d*100).toFixed(0)).join("×")} cm)`;
+  $(p+"Fill").textContent=fmtVol(r.fitVol);
+  $(p+"Left").textContent=fmtVol(Math.max(0,v.vol-r.fitVol));
+  $(p+"Pct").textContent=pct.toFixed(1).replace(".",",")+"%";
+  const totCount=list.reduce((s,it)=>s+it.qty,0);
+  $(p+"Fit").textContent=r.placed.length+" / "+totCount+" pcs";
+  const bar=$(p+"Fillbar");
+  bar.style.width=Math.min(100,pct)+"%";
+  bar.style.background = pct>85? "linear-gradient(90deg,#f59e0b,#d97706)"
+    : "linear-gradient(90deg,#22c55e,#16a34a)";
+  const lg=$(p+"Legend"); lg.innerHTML="";
+  [...new Set(list.map(it=>it.nama))].forEach(n=>{
+    const it=list.find(x=>x.nama===n);
+    lg.innerHTML+=`<span><i style="background:${it.color}"></i>${n}</span>`;
+  });
+  const mb=$(p+"Msg"); let html="";
+  if(r.notFit>0) html+=`<div class="warn">⚠️ <b>${r.notFit} pcs tidak muat</b> — susunannya tidak cukup di ${v.name} walau kubikasinya muat (kardus itu kaku, selalu menyisakan celah). Kurangi jumlah atau pilih kendaraan lebih besar.</div>`;
+  else if(totCount>0) html+=`<div class="okmsg">✅ Semua ${totCount} pcs muat di ${v.name} — utilisasi ${pct.toFixed(1).replace(".",",")}%.</div>`;
+  if(totBerat>v.payload*1000)
+    html+=`<div class="warn">⚠️ <b>Kelebihan muatan!</b> Total ${Math.round(totBerat).toLocaleString("id-ID")} kg melebihi daya angkut ${v.name} (±${(v.payload*1000).toLocaleString("id-ID")} kg).</div>`;
+  mb.innerHTML=html;
+}
+/* ============ PANDUAN URUTAN MUAT (berat di bawah, ringan di atas) ============ */
+function renderGuide(p,r,v){
+  const el=$(p+"Guide"); if(!el) return;
+  if(!r.steps.length){ el.innerHTML=""; return; }
+  const Wd=v.dims[0];
+  const pos=x0=>x0<Wd*0.34?"depan":x0<Wd*0.67?"tengah":"belakang";
+  let html=`<div class="sub">📋 Panduan urutan muat <span style="color:var(--muted);font-weight:400;font-size:12px">(ikuti nomor di gambar 3D — yang berat di bawah, ringan di atas)</span></div><ol class="guidelist">`;
+  r.steps.forEach(s=>{
+    const perLayer={};
+    r.placed.forEach(b=>{ if(b.step===s.n) (perLayer[b.li]=perLayer[b.li]||[]).push(b); });
+    const lis=Object.keys(perLayer).map(Number).sort((a,b)=>a-b);
+    const parts=lis.map(li=>{
+      const m={};
+      perLayer[li].forEach(b=>{ const k=b.kode||b.nama;
+        (m[k]=m[k]||{kode:b.kode,nama:b.nama,color:b.color,qty:0,b:b.b}).qty++; });
+      const items=Object.values(m).sort((a,b)=>b.b-a.b);
+      const lbl=li===0?"bawah":"lapis "+(li+1);
+      return `<b>${lbl}:</b> `+items.map(i=>
+        `<span class="itemswatch" style="background:${i.color}"></span>${i.kode?i.kode+" ":""}${i.nama} ×${i.qty}${i.b?" ("+i.b+" kg/pcs)":""}`
+      ).join(", ");
+    });
+    html+=`<li><b>Langkah ${s.n} — ${pos(s.x0).toUpperCase()}</b><br><span style="font-size:12px;color:var(--muted)">${parts.join("<br>")}</span></li>`;
+  });
+  html+=`</ol>`;
+  if(r.placed.some(b=>!b.b)) html+=`<p class="hint">ⓘ Barang tanpa berat dianggap paling ringan → ditaruh paling atas.</p>`;
+  if(r.unstable&&r.unstable.length){
+    // hanya relevan kalau muatan jarang — kalau bak penuh, tumpukan saling menahan
+    const util=v.vol>0?r.fitVol/v.vol:1;
+    if(util<0.6){
+      html+=`<div class="warn">⚠️ <b>Risiko roboh!</b><br>`+r.unstable.map(u=>
+        `Langkah ${u.n}: tumpukan ±${Math.round(u.topH*100)} cm dengan tapak ±${Math.round(u.base*100)} cm — terlalu tinggi &amp; ramping. Sebarkan barangnya atau ikat dengan tali/jaring.`
+      ).join("<br>")+`</div>`;
+    }
+  }
+  el.innerHTML=html;
+}
+$("btnVehAuto").onclick=()=>{ vehAuto=true; save(); updateVehModeTag(); hitungOtomatis(); };
+// menu 2: hitung otomatis setiap ada perubahan
+function hitungOtomatis(){
+  // qty selalu dihitung dalam Mbox (satuan fisik yang dimuat)
+  const list=[];
+  Object.keys(ship).map(k=>+k).filter(i=>items[i]).forEach(i=>{
+    const it=items[i], e=ship[i]||{q:1,m:"mbox"};
+    const q=Math.max(1,parseInt(e.q)||1), per=it.perMbox>1?it.perMbox:1;
+    const mboxQ=e.m==="box"?Math.ceil(q/per):q;
+    list.push(Object.assign({},it,{qty:mboxQ,boxQ:e.m==="box"?q:q*per,mode:e.m==="box"?"box":"mbox",perMbox:per}));
+  });
+  const box=$("shipResult");
+  if(!list.length){ box.style.display="none"; $("shRekom").innerHTML=""; $("shGuide").innerHTML=""; $("shSelisih").style.display="none"; return; }
+  if(vehAuto && autoPickVeh(list)){ save(); renderVehSelect(); }
+  updateVehModeTag();
+  const v=veh(), r=packItems(list,v);
+  // selisih kubikasi: barang vs kendaraan
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const diff=v.vol-totVol, pctUse=v.vol>0?totVol/v.vol*100:0;
+  $("shSelisih").style.display="block";
+  $("slBarang").textContent=fmtVol(totVol);
+  $("slVeh").textContent=fmtVol(v.vol);
+  const dd=$("slDiff");
+  dd.textContent=(diff<0?"−":"+")+fmtVol(Math.abs(diff));
+  dd.style.color=diff<0?"var(--red)":"var(--green)";
+  let shst="";
+  if(diff<0) shst=`<div class="warn">🔴 <b>KURANG ${fmtVol(-diff)}</b> — volume barang melebihi daya tampung ${v.name}. Kurangi jumlah atau pilih kendaraan lebih besar.</div>`;
+  else if(pctUse>=95) shst=`<div class="okmsg">🟢 <b>CUKUP</b> — pas! Sisa ruang tinggal ${fmtVol(diff)}.</div>`;
+  else shst=`<div class="okmsg">🟢 <b>LEBIH</b> — masih sisa ${fmtVol(diff)} ruang kosong di ${v.name}.</div>`;
+  $("slStatus").innerHTML=shst;
+  // perkiraan maks muat: total dikirim vs kapasitas kendaraan (komposisi sama, dalam Mbox)
+  $("maxFitMode").textContent=`(komposisi barang yang sama — mode ${packMode==="tangga"?"🪜 Tangga":"📦 Penuh"})`;
+  const totMbox=list.reduce((s,it)=>s+it.qty,0);
+  const totBox=list.reduce((s,it)=>s+it.boxQ,0);
+  const anyPer=list.some(it=>it.perMbox>1);
+  const mm=maxMixFit(list,v);
+  $("mfTot").innerHTML=totMbox.toLocaleString("id-ID")+" Mbox"+(anyPer?`<br><span style="font-size:11px;color:var(--muted)">(${totBox.toLocaleString("id-ID")} box)</span>`:"");
+  let capTxt="—", diffHtml="—", note="";
+  if(mm&&mm.cap>0){
+    capTxt=(mm.capped?"> ":"≈ ")+mm.cap.toLocaleString("id-ID")+" Mbox";
+    const d=mm.cap-totMbox;
+    diffHtml=d>0?`<b style="color:var(--green)">+${d.toLocaleString("id-ID")} Mbox</b>`
+      :d<0?`<b style="color:var(--red)">${d.toLocaleString("id-ID")} Mbox</b>`:`<b>pas</b>`;
+    if(!mm.full) note=`<div class="warn">⚠️ Komposisi saat ini tidak muat penuh di ${v.name} — kurangi barang atau pakai kendaraan lebih besar.</div>`;
+  }else{
+    note=`<div class="warn">⚠️ Komposisi saat ini tidak muat di ${v.name} — kurangi barang atau pakai kendaraan lebih besar.</div>`;
+  }
+  $("mfCap").textContent=capTxt;
+  $("mfDiff").innerHTML=diffHtml;
+  $("mfNote").innerHTML=note;
+  box.style.display="block";
+  drawSim(v,r.placed,"shipCanvas",r.steps);
+  fillStats("sh",v,list,r);
+  renderGuide("sh",r,v);
+  $("shRekom").innerHTML=rekomHTML(list,v,r);
+  lastCalc={list,v,r};
+}
+/* ============ CETAK / BAGIKAN ============ */
+let lastCalc=null;
+const BULAN=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+function tglID(d){ d=d||new Date(); return d.getDate()+" "+BULAN[d.getMonth()]+" "+d.getFullYear()+", "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function dimStr(v){ return v.dims.map(x=>(x*100).toFixed(0)).join("×")+" cm"; }
+function buildPrintArea(){
+  if(!lastCalc) return false;
+  const {list,v,r}=lastCalc, now=tglID();
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totQty=list.reduce((s,it)=>s+it.qty,0);
+  const totBox=list.reduce((s,it)=>s+(it.boxQ||it.qty),0);
+  const anyPer=list.some(it=>it.perMbox>1);
+  const qtyCell=it=>it.perMbox>1
+    ? (it.mode==="box"?`${it.boxQ.toLocaleString("id-ID")} box<br><span style="font-size:11px">= ${it.qty} Mbox</span>`:`${it.qty} Mbox<br><span style="font-size:11px">= ${it.boxQ.toLocaleString("id-ID")} box</span>`)
+    : it.qty.toLocaleString("id-ID");
+  const rows=list.map((it,i)=>`<tr><td>${i+1}</td><td>${it.kode||"-"}</td><td>${it.nama}</td><td class="num">${Math.round(it.p*100)}×${Math.round(it.l*100)}×${Math.round(it.t*100)}</td><td class="num">${qtyCell(it)}</td><td class="num">${fmtVol(it.p*it.l*it.t*it.qty)}</td></tr>`).join("");
+  let img=""; try{ img=`<img src="${$("shipCanvas").toDataURL("image/png")}">`; }catch(e){}
+  const diff=v.vol-totVol;
+  const st=diff<0?"KURANG":(totVol/v.vol>=0.95?"CUKUP":"LEBIH");
+  $("printArea").innerHTML=`
+    <h2>kubikasiku — Hasil perhitungan kubikasi</h2><div>📅 ${now}</div>
+    ${(shipDari||shipKe)?`<div>🗺️ <b>${shipDari||"…"}</b> → <b>${shipKe||"…"}</b></div>`:""}
+    <h3>📦 Barang (${totQty.toLocaleString("id-ID")} Mbox${anyPer?" = "+totBox.toLocaleString("id-ID")+" box":""})</h3>
+    <table><thead><tr><th>No</th><th>Kode</th><th>Nama</th><th>Ukuran (cm)</th><th>Qty</th><th>Volume</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3>🚚 Kendaraan</h3>
+    <div><b>${v.name}</b> — dalam ${dimStr(v)} = <b>${fmtVol(v.vol)}</b> • maks ±${(v.payload*1000).toLocaleString("id-ID")} kg</div>
+    <h3>📊 Ringkasan</h3>
+    <table><tbody>
+      <tr><td>Total kubikasi barang</td><td class="num"><b>${fmtVol(totVol)}</b></td></tr>
+      <tr><td>Kubikasi kendaraan</td><td class="num"><b>${fmtVol(v.vol)}</b></td></tr>
+      <tr><td>Selisih</td><td class="num"><b>${diff>=0?"+":"-"}${fmtVol(Math.abs(diff))} (${st})</b></td></tr>
+      <tr><td>Muat / tidak muat</td><td class="num"><b>${r.placed.length} / ${totQty} Mbox</b></td></tr>
+      <tr><td>Utilisasi</td><td class="num"><b>${(v.vol>0?r.fitVol/v.vol*100:0).toFixed(1).replace(".",",")}%</b></td></tr>
+    </tbody></table>
+    <h3>🚚 Simulasi susunan</h3>${img}
+    <h3>📋 Panduan urutan muat</h3>${$("shGuide").innerHTML}
+    <p><i>Dihitung otomatis oleh kubikasiku • ${now}</i></p>`;
+  return true;
+}
+function buildShareText(){
+  if(!lastCalc) return "";
+  const {list,v,r}=lastCalc;
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totQty=list.reduce((s,it)=>s+it.qty,0);
+  const diff=v.vol-totVol;
+  const st=diff<0?"🔴 KURANG":(totVol/v.vol>=0.95?"🟢 CUKUP":"🟢 LEBIH");
+  const L=[];
+  L.push("*kubikasiku — Hasil hitung kubikasi*");
+  L.push("📅 "+tglID());
+  if(shipDari||shipKe) L.push(`🗺️ ${shipDari||"…"} → ${shipKe||"…"}`);
+  L.push("");
+  L.push("📦 *Barang:*");
+  list.forEach(it=>{
+    const qstr=it.perMbox>1?(it.mode==="box"?`${it.boxQ.toLocaleString("id-ID")} box = ${it.qty} Mbox`:`${it.qty} Mbox (${it.boxQ.toLocaleString("id-ID")} box)`):`${it.qty} pcs`;
+    L.push(`• ${it.kode?it.kode+" ":""}${it.nama} (${Math.round(it.p*100)}×${Math.round(it.l*100)}×${Math.round(it.t*100)}) × ${qstr} = ${fmtVol(it.p*it.l*it.t*it.qty)}`);
+  });
+  L.push("");
+  L.push(`🚚 *Kendaraan:* ${v.name} (${dimStr(v)} = ${fmtVol(v.vol)})`);
+  L.push("");
+  L.push(`📊 Total barang: ${fmtVol(totVol)}`);
+  L.push(`🚚 Kubikasi kendaraan: ${fmtVol(v.vol)}`);
+  L.push(`➖ Selisih: ${diff>=0?"+":"-"}${fmtVol(Math.abs(diff))} — ${st}`);
+  L.push(`✅ Muat: ${r.placed.length}/${totQty} Mbox | Utilisasi ${(v.vol>0?r.fitVol/v.vol*100:0).toFixed(1).replace(".",",")}%`);
+  return L.join("\n");
+}
+/* ============ PDF (lampiran share, dibuat offline tanpa library) ============ */
+function buildKubikasiPDF(){
+  if(!lastCalc) return null;
+  const {list,v,r}=lastCalc;
+  const totVol=list.reduce((s,it)=>s+it.p*it.l*it.t*it.qty,0);
+  const totMbox=list.reduce((s,it)=>s+it.qty,0);
+  const diff=v.vol-totVol;
+  const st=diff<0?"KURANG":(v.vol>0&&totVol/v.vol>=0.95?"CUKUP":"LEBIH");
+  const PW=595,PH=842,M=45;
+  const esc=s=>String(s).replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)")
+    .replace(/×/g,"x").replace(/³/g,"3").replace(/—/g,"-").replace(/–/g,"-").replace(/•/g,"-").replace(/[^\x20-\x7E]/g,"");
+  const pages=[[]]; let y=PH-60;
+  const newPage=()=>{ pages.push([]); y=PH-60; };
+  const line=(t,size)=>{ size=size||11; if(y<70) newPage(); pages[pages.length-1].push({t:`BT /F1 ${size} Tf ${M} ${y.toFixed(1)} Td (${esc(t)}) Tj ET`}); y-=size+5; };
+  const gap=h=>{ y-=h; if(y<70) newPage(); };
+  line("kubikasiku - Hasil perhitungan kubikasi",15);
+  line(tglID(),10);
+  if(shipDari||shipKe) line(`Rute: ${shipDari||"-"} -> ${shipKe||"-"}`,10);
+  gap(8);
+  line("BARANG",12);
+  list.forEach((it,i)=>{
+    const nm=(it.nama||"").slice(0,80);
+    const q=it.perMbox>1?(it.mode==="box"?`${it.boxQ} box = ${it.qty} Mbox`:`${it.qty} Mbox (${it.boxQ} box)`):`${it.qty} pcs`;
+    line(`${i+1}. ${(it.kode?it.kode+" ":"")+nm} (${Math.round(it.p*100)}x${Math.round(it.l*100)}x${Math.round(it.t*100)} cm) x ${q} = ${fmtVol(it.p*it.l*it.t*it.qty)}`,9);
+  });
+  gap(8); line("KENDARAAN",12);
+  line(`${v.name} - dalam ${v.dims.map(x=>Math.round(x*100)).join("x")} cm = ${fmtVol(v.vol)}, maks ${Math.round(v.payload*1000)} kg`,10);
+  gap(8); line("RINGKASAN",12);
+  line(`Total kubikasi barang : ${fmtVol(totVol)}`,10);
+  line(`Kubikasi kendaraan   : ${fmtVol(v.vol)}`,10);
+  line(`Selisih              : ${diff>=0?"+":"-"}${fmtVol(Math.abs(diff))} (${st})`,10);
+  line(`Muat / tidak muat    : ${r.placed.length} / ${totMbox} Mbox`,10);
+  line(`Utilisasi            : ${(v.vol>0?r.fitVol/v.vol*100:0).toFixed(1)}%`,10);
+  gap(8); line("SIMULASI SUSUNAN",12);
+  let imgBin="",imgW=0,imgH=0;
+  try{
+    const cv=$("shipCanvas");
+    imgBin=atob(cv.toDataURL("image/jpeg",0.82).split(",")[1]);
+    imgW=cv.width; imgH=cv.height;
+  }catch(e){}
+  if(imgBin){
+    const sc=Math.min(1,(PW-2*M)/imgW), dw=imgW*sc, dh=imgH*sc;
+    if(y-dh<60) newPage();
+    pages[pages.length-1].push({img:1,x:M,y:y-dh,w:dw,h:dh});
+    y-=dh+8;
+  }
+  line("Dihitung otomatis oleh kubikasiku",9);
+  // rakit file PDF
+  const enc=new TextEncoder(), chunks=[], offs=[];
+  const total=()=>chunks.reduce((s,c)=>s+c.length,0);
+  const ps=s=>chunks.push(enc.encode(s));
+  const pb=s=>{ const a=new Uint8Array(s.length); for(let i=0;i<s.length;i++) a[i]=s.charCodeAt(i)&255; chunks.push(a); };
+  const P=pages.length, F=3+P, I=4+P, C0=I+(imgBin?1:0);
+  const obj=(n,body)=>{ offs[n]=total(); ps(`${n} 0 obj\n${body}\nendobj\n`); };
+  ps("%PDF-1.4\n");
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,`<< /Type /Pages /Kids [${Array.from({length:P},(_,i)=>`${3+i} 0 R`).join(" ")}] /Count ${P} >>`);
+  pages.forEach((pg,i)=>{
+    const res=imgBin?` /XObject << /Im1 ${I} 0 R >>`:"";
+    obj(3+i,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /Font << /F1 ${F} 0 R >>${res} >> /Contents ${C0+i} 0 R >>`);
+  });
+  obj(F,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  if(imgBin){
+    offs[I]=total();
+    ps(`${I} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgBin.length} >>\nstream\n`);
+    pb(imgBin);
+    ps("\nendstream\nendobj\n");
+  }
+  pages.forEach((pg,i)=>{
+    const ops=pg.map(o=>o.img?`q ${o.w.toFixed(1)} 0 0 ${o.h.toFixed(1)} ${o.x.toFixed(1)} ${o.y.toFixed(1)} cm /Im1 Do Q`:o.t).join("\n");
+    const bytes=enc.encode(ops);
+    offs[C0+i]=total();
+    ps(`${C0+i} 0 obj\n<< /Length ${bytes.length} >>\nstream\n`);
+    chunks.push(bytes);
+    ps("\nendstream\nendobj\n");
+  });
+  const xrefPos=total(), n=C0+P;
+  ps(`xref\n0 ${n+1}\n0000000000 65535 f \n`);
+  for(let i=1;i<=n;i++) ps(`${String(offs[i]).padStart(10,"0")} 00000 n \n`);
+  ps(`trailer\n<< /Size ${n+1} /Root 1 0 R >>\nstartxref\n${xrefPos}\n%%EOF`);
+  return {blob:new Blob(chunks,{type:"application/pdf"}),name:"kubikasiku-"+new Date().toISOString().slice(0,10)+".pdf"};
+}
+$("btnPrint").onclick=()=>{ if(buildPrintArea()) window.print(); };
+$("btnShare").onclick=async()=>{
+  const txt=buildShareText(); if(!txt) return;
+  const pdf=buildKubikasiPDF();
+  const file=pdf?new File([pdf.blob],pdf.name,{type:"application/pdf"}):null;
+  // 1) share dengan lampiran PDF (masuk sebagai dokumen di WhatsApp/dll)
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],title:"kubikasiku",text:txt}); return; }
+    catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  // 2) tidak bisa lampirkan: unduh PDF-nya supaya bisa dilampirkan manual
+  if(file){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(file); a.download=pdf.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }
+  if(navigator.share){
+    try{ await navigator.share({title:"kubikasiku",text:txt}); return; }
+    catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank");
+};
+/* ============ BACKUP: lokal + Google Drive ============ */
+const GD_CLIENT_ID="981523521715-uaedcplqivs6rn9t3v8hu61bvmrr2v0a.apps.googleusercontent.com"; // sama dengan kaloriku
+const GD_SCOPE="https://www.googleapis.com/auth/drive.file";
+const LS_GD="kubikasiku_gd";
+const gSiap=()=>window.google&&google.accounts&&google.accounts.oauth2;
+const getGD=()=>{ try{return JSON.parse(localStorage.getItem(LS_GD))||{};}catch(e){return{};} };
+const saveGD=o=>localStorage.setItem(LS_GD,JSON.stringify(o));
+const gdValid=()=>{ const g=getGD(); return !!(g.token&&Date.now()<g.expiresAt); };
+let gdTC=null, gdPending=null;
+function gdTCGet(){
+  if(gdTC) return gdTC;
+  if(!gSiap()) return null;
+  gdTC=google.accounts.oauth2.initTokenClient({client_id:GD_CLIENT_ID,scope:GD_SCOPE,
+    callback:r=>{ const cb=gdPending; gdPending=null; if(cb)cb(r); },
+    error_callback:()=>{ const cb=gdPending; gdPending=null; if(cb)cb(null); }});
+  return gdTC;
+}
+function gdToken(promptMode){
+  return new Promise(res=>{
+    const tc=gdTCGet(); if(!tc) return res(false);
+    gdPending=r=>{
+      if(r&&r.access_token){ const g=getGD(); g.token=r.access_token; g.expiresAt=Date.now()+(r.expires_in||3600)*1000; saveGD(g); res(true); }
+      else res(false);
+    };
+    try{ tc.requestAccessToken({prompt:promptMode||""}); }catch(e){ gdPending=null; res(false); }
+  });
+}
+async function gdApi(path,opts){
+  const r=await fetch("https://www.googleapis.com"+path,Object.assign({},opts,{headers:Object.assign({Authorization:"Bearer "+getGD().token},(opts&&opts.headers)||{})}));
+  if(r.status===401){ const g=getGD(); delete g.token; saveGD(g); gdRender(); throw new Error("auth"); }
+  return r;
+}
+async function gdFolder(){
+  const g=getGD(); if(g.folderId) return g.folderId;
+  const q=encodeURIComponent("mimeType='application/vnd.google-apps.folder' and name='Kubikasiku Backup' and trashed=false");
+  const r=await gdApi("/drive/v3/files?q="+q+"&fields=files(id)&pageSize=1");
+  const j=await r.json(); let id=j.files&&j.files[0]&&j.files[0].id;
+  if(!id){
+    const rc=await gdApi("/drive/v3/files?fields=id",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:"Kubikasiku Backup",mimeType:"application/vnd.google-apps.folder"})});
+    id=(await rc.json()).id;
+  }
+  const gg=getGD(); gg.folderId=id; saveGD(gg); return id;
+}
+function backupData(){ return {app:"kubikasiku",v:1,t:Date.now(),data:{items,vehId,ship,packMode,vehAuto}}; }
+function applyBackup(j){
+  const d=j.data||j;
+  if(!d.items){ alert("Bukan file backup kubikasiku."); return; }
+  items=d.items||[]; vehId=d.vehId||"cddbox"; ship=d.ship||{}; packMode=d.packMode||"tangga"; vehAuto=d.vehAuto!==false;
+  save(); location.reload();
+}
+$("btnDlBackup").onclick=()=>{
+  const blob=new Blob([JSON.stringify(backupData())],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="kubikasiku-backup-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
+$("btnUpBackup").onclick=()=>$("fileBackup").click();
+$("fileBackup").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const j=JSON.parse(rd.result);
+      if(((j.data||j).items)==null) throw new Error("bukan file backup kubikasiku");
+      if(confirm("Pulihkan backup ini? Data saat ini akan diganti.")) applyBackup(j);
+    }catch(err){ alert("Gagal membaca file: "+err.message); }
+  };
+  rd.readAsText(f); e.target.value="";
+};
+function gdRender(){
+  const g=getGD(), ok=gdValid();
+  $("btnGdConn").textContent=ok?"🔓 Putuskan":"🔗 Hubungkan";
+  $("gdStatus").textContent=ok?"Terhubung ke Google Drive ✅":"Belum terhubung.";
+  $("gdInfo").textContent=g.lastBackup?("Backup terakhir: "+new Date(g.lastBackup).toLocaleString("id-ID")):"";
+}
+$("btnGdConn").onclick=async()=>{
+  if(gdValid()){
+    const g=getGD();
+    if(gSiap()){ try{google.accounts.oauth2.revoke(g.token);}catch(e){} }
+    saveGD({}); gdTC=null; gdRender(); return;
+  }
+  if(!gSiap()){ $("gdStatus").textContent="Google sign-in masih loading (butuh internet), coba lagi sebentar."; return; }
+  $("gdStatus").textContent="Membuka izin Google...";
+  const ok=await gdToken("consent");
+  gdRender();
+  if(!ok) $("gdStatus").textContent="Otorisasi gagal.";
+};
+$("btnGdBackup").onclick=async()=>{
+  if(!gdValid()){ const ok=await gdToken("consent"); if(!ok){ $("gdStatus").textContent="Belum terhubung."; return; } }
+  $("gdStatus").textContent="Mengupload backup...";
+  try{
+    const fid=await gdFolder();
+    const data=JSON.stringify(backupData());
+    const nama="kubikasiku-backup-"+new Date().toISOString().slice(0,10)+".json";
+    const b="kubik"+Date.now();
+    const body="--"+b+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify({name:nama,mimeType:"application/json",parents:[fid]})+"\r\n--"+b+"\r\nContent-Type: application/json\r\n\r\n"+data+"\r\n--"+b+"--";
+    const r=await gdApi("/upload/drive/v3/files?uploadType=multipart&fields=id",{method:"POST",headers:{"Content-Type":"multipart/related; boundary="+b},body});
+    if(!r.ok) throw new Error("Drive "+r.status);
+    const q=encodeURIComponent("'"+fid+"' in parents and trashed=false");
+    const rl=await gdApi("/drive/v3/files?q="+q+"&orderBy=createdTime desc&fields=files(id)&pageSize=30");
+    const files=((await rl.json()).files||[]);
+    for(let i=10;i<files.length;i++){ try{ await gdApi("/drive/v3/files/"+files[i].id,{method:"DELETE"}); }catch(e){} }
+    const g=getGD(); g.lastBackup=Date.now(); saveGD(g); gdRender();
+    $("gdStatus").textContent="Backup berhasil: "+nama+" ✅";
+  }catch(e){ $("gdStatus").textContent=e.message==="auth"?"Sesi habis — hubungkan ulang.":"Gagal: "+e.message; }
+};
+$("btnGdRestore").onclick=async()=>{
+  if(!gdValid()){ const ok=await gdToken("consent"); if(!ok){ $("gdStatus").textContent="Belum terhubung."; return; } }
+  $("gdStatus").textContent="Mencari backup...";
+  try{
+    const fid=await gdFolder();
+    const q=encodeURIComponent("'"+fid+"' in parents and trashed=false");
+    const r=await gdApi("/drive/v3/files?q="+q+"&orderBy=createdTime desc&fields=files(id,name,createdTime)&pageSize=10");
+    const files=((await r.json()).files||[]);
+    if(!files.length){ $("gdStatus").textContent="Tidak ada backup di Drive."; return; }
+    const f=files[0];
+    if(!confirm('Pulihkan backup "'+f.name+'"? Data saat ini akan diganti.')) return;
+    const rd=await gdApi("/drive/v3/files/"+f.id+"?alt=media");
+    if(!rd.ok) throw new Error("Drive "+rd.status);
+    applyBackup(await rd.json());
+  }catch(e){ $("gdStatus").textContent=e.message==="auth"?"Sesi habis — hubungkan ulang.":"Gagal: "+e.message; }
+};
+$("btnMenu").onclick=()=>{ const p=$("menuPanel"); p.style.display=p.style.display==="none"?"block":"none"; gdRender(); };
+/* ============ CEK UPDATE (via version.json di hosting) ============ */
+const APP_V=6;
+$("appVer").textContent="v"+APP_V;
+async function cekUpdate(manual){
+  if(!/^https?:$/.test(location.protocol)){ if(manual) alert("Buka lewat hosting (kubikasiku.kossyariah.my.id) untuk cek update."); return; }
+  try{
+    const r=await fetch("version.json?_="+Date.now(),{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j=await r.json();
+    if(j&&j.v>APP_V){
+      $("updInfo").textContent=`Versi baru tersedia: v${j.v} (kamu v${APP_V})`;
+      $("updBanner").style.display="block";
+    }else if(manual){
+      alert("Sudah versi terbaru (v"+APP_V+").");
+    }
+  }catch(e){ if(manual) alert("Gagal cek update (butuh internet)."); }
+}
+$("btnUpd").onclick=()=>{ location.href=location.pathname+"?v="+Date.now(); };
+$("btnCekUpd").onclick=()=>cekUpdate(true);
+/* ============ IMPORT / EXPORT CSV (Excel & Google Sheets) ============ */
+function csvEsc(v){ v=String(v??""); return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+$("btnExpCsv").onclick=()=>{
+  if(!items.length){ alert("Belum ada barang untuk diexport."); return; }
+  const rows=[["Kode","Nama","Panjang_cm","Lebar_cm","Tinggi_cm","Berat_kg","Isi_per_Mbox"]];
+  items.forEach(it=>rows.push([it.kode||"",it.nama||"",Math.round(it.p*100),Math.round(it.l*100),Math.round(it.t*100),it.berat||0,it.perMbox>1?it.perMbox:""]));
+  const csv="\uFEFF"+rows.map(r=>r.map(csvEsc).join(";")).join("\r\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download="kubikasiku-barang.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
+function parseCSV(text){
+  text=String(text).replace(/^\uFEFF/,"").replace(/\r\n?/g,"\n");
+  const first=(text.split("\n")[0]||"");
+  const sc=(first.match(/;/g)||[]).length, cc=(first.match(/,/g)||[]).length;
+  const d=(sc>=cc&&sc>0)?";":",";
+  const rows=[]; let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else q=false; }
+      else cur+=c;
+    }else if(c==='"') q=true;
+    else if(c===d){ row.push(cur); cur=""; }
+    else if(c==="\n"){ row.push(cur); rows.push(row); row=[]; cur=""; }
+    else cur+=c;
+  }
+  if(cur!==""||row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>!(r.length===1&&r[0].trim()===""));
+}
+const CSV_COLS={
+  kode:["kode","code","item","sku","kode item","kode barang"],
+  nama:["nama","name","nama barang","nama item","barang","deskripsi"],
+  p:["panjang","panjang_cm","panjang (cm)","length","p"],
+  l:["lebar","lebar_cm","lebar (cm)","width"],
+  t:["tinggi","tinggi_cm","tinggi (cm)","height"],
+  berat:["berat","berat_kg","berat (kg)","weight","kg"],
+  perMbox:["isi per mbox","isi_per_mbox","isi/mbox","per mbox","isi box","perbox","box per mbox"]
+};
+function importRows(rows){
+  if(rows.length<2) throw new Error("file kosong / tidak ada data");
+  const normH=s=>String(s).toLowerCase().trim().replace(/_/g," ").replace(/\s+/g," ");
+  const head=rows[0].map(normH);
+  const col={};
+  for(const k in CSV_COLS) col[k]=head.findIndex(h=>CSV_COLS[k].some(a=>normH(a)===h));
+  if(col.nama<0||col.p<0) throw new Error("kolom Nama / Panjang tidak ditemukan di baris judul");
+  const num=v=>{ const n=parseFloat(String(v??"").trim().replace(",",".")); return isNaN(n)?0:n; };
+  let ok=0,skip=0;
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    const nama=String(r[col.nama]??"").trim();
+    const p=num(r[col.p]), l=col.l>=0?num(r[col.l]):0, t=col.t>=0?num(r[col.t]):0;
+    if(!nama||!(p>0)||!(l>0)||!(t>0)){ skip++; continue; }
+    const berat=col.berat>=0?num(r[col.berat]):0;
+    const pm=col.perMbox>=0?parseInt(r[col.perMbox]):1;
+    items.push({kode:col.kode>=0?String(r[col.kode]??"").trim():"",nama,p:p/100,l:l/100,t:t/100,berat,perMbox:pm>0?pm:1,color:PALETTE[items.length%PALETTE.length]});
+    ok++;
+  }
+  save(); renderItems();
+  return {ok,skip};
+}
+function importCSV(text){ return importRows(parseCSV(text)); }
+/* ============ BACA XLSX (tanpa library, offline) ============ */
+function inflateRaw(src){
+  let p=0,bb=0,bc=0;
+  const out=[];
+  const get=n=>{ while(bc<n){ bb|=src[p++]<<bc; bc+=8; } const r=bb&((1<<n)-1); bb>>>=n; bc-=n; return r; };
+  const mkHuff=lens=>{
+    const max=Math.max.apply(null,lens);
+    const cnt=new Array(max+1).fill(0);
+    lens.forEach(l=>{ if(l) cnt[l]++; });
+    const next=new Array(max+1); let code=0;
+    for(let b=1;b<=max;b++){ code=(code+cnt[b-1])<<1; next[b]=code; }
+    const map=new Map();
+    lens.forEach((l,s)=>{ if(l){ map.set((l<<16)|next[l],s); next[l]++; } });
+    return ()=>{ let c=0,l=0; for(;;){ c=(c<<1)|get(1); l++; const s=map.get((l<<16)|c); if(s!==undefined) return s; if(l>max) throw new Error("huffman rusak"); } };
+  };
+  const LBASE=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+  const LEXT=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+  const DBASE=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+  const DEXT=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+  const fixedLit=()=>{ const l=new Array(288); for(let i=0;i<144;i++)l[i]=8; for(let i=144;i<256;i++)l[i]=9; for(let i=256;i<280;i++)l[i]=7; for(let i=280;i<288;i++)l[i]=8; return mkHuff(l); };
+  const fixedDist=()=>mkHuff(new Array(32).fill(5));
+  let last=false;
+  while(!last){
+    last=get(1); const type=get(2);
+    let lit,dist;
+    if(type===0){ bb=0; bc=0; const len=src[p]|(src[p+1]<<8); p+=4; for(let i=0;i<len;i++) out.push(src[p++]); continue; }
+    else if(type===1){ lit=fixedLit(); dist=fixedDist(); }
+    else if(type===2){
+      const HLIT=get(5)+257,HDIST=get(5)+1,HCLEN=get(4)+4;
+      const order=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+      const cl=new Array(19).fill(0);
+      for(let i=0;i<HCLEN;i++) cl[order[i]]=get(3);
+      const cd=mkHuff(cl), lens=[];
+      while(lens.length<HLIT+HDIST){
+        const s=cd();
+        if(s<=15) lens.push(s);
+        else if(s===16){ const n=get(2)+3,v=lens[lens.length-1]; for(let i=0;i<n;i++) lens.push(v); }
+        else if(s===17){ const n=get(3)+3; for(let i=0;i<n;i++) lens.push(0); }
+        else { const n=get(7)+11; for(let i=0;i<n;i++) lens.push(0); }
+      }
+      lit=mkHuff(lens.slice(0,HLIT)); dist=mkHuff(lens.slice(HLIT,HLIT+HDIST));
+    }else throw new Error("blok deflate rusak");
+    for(;;){
+      const s=lit();
+      if(s<256) out.push(s);
+      else if(s===256) break;
+      else{
+        const len=LBASE[s-257]+get(LEXT[s-257]);
+        const ds=dist(), d=DBASE[ds]+get(DEXT[ds]);
+        for(let i=0;i<len;i++) out.push(out[out.length-d]);
+      }
+    }
+  }
+  return new Uint8Array(out);
+}
+function unzipXLSX(bytes){
+  const b=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);
+  const dv=new DataView(b.buffer,b.byteOffset,b.byteLength);
+  const n=b.length;
+  let eocd=-1;
+  for(let i=n-22;i>=Math.max(0,n-65560);i--) if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  if(eocd<0) throw new Error("bukan file Excel (.xlsx)");
+  const cnt=dv.getUint16(eocd+10,true), off=dv.getUint32(eocd+16,true);
+  const td=new TextDecoder(), files={};
+  let p=off;
+  for(let i=0;i<cnt;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) throw new Error("zip rusak");
+    if(dv.getUint16(p+8,true)&0x08) throw new Error("zip tidak didukung");
+    const method=dv.getUint16(p+10,true);
+    const cs=dv.getUint32(p+20,true);
+    const nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true);
+    const name=td.decode(b.subarray(p+46,p+46+nl));
+    const lh=dv.getUint32(p+42,true);
+    const doff=lh+30+dv.getUint16(lh+26,true)+dv.getUint16(lh+28,true);
+    const comp=b.subarray(doff,doff+cs);
+    if(method===0) files[name]=comp;
+    else if(method===8) files[name]=inflateRaw(comp);
+    else throw new Error("kompresi tidak didukung");
+    p+=46+nl+el+cl;
+  }
+  return files;
+}
+function xmlEnt(s){ return String(s).replace(/&(lt|gt|amp|quot|apos);/g,(m,k)=>({lt:"<",gt:">",amp:"&",quot:'"',apos:"'"}[k])); }
+function colL2I(l){ let n=0; for(let i=0;i<l.length;i++) n=n*26+(l.charCodeAt(i)-64); return n-1; }
+function parseXLSX(buf){
+  const files=unzipXLSX(buf), td=new TextDecoder();
+  let shared=[];
+  if(files["xl/sharedStrings.xml"]){
+    const ss=td.decode(files["xl/sharedStrings.xml"]);
+    const re=/<si>([\s\S]*?)<\/si>/g; let m;
+    while((m=re.exec(ss)))
+      shared.push(xmlEnt((m[1].match(/<t[^>]*>([\s\S]*?)<\/t>/g)||[]).map(x=>x.replace(/<t[^>]*>/,"").replace(/<\/t>/,"")).join("")));
+  }
+  const wsn=Object.keys(files).find(k=>/^xl\/worksheets\/sheet1\.xml$/i.test(k))
+    || Object.keys(files).filter(k=>/^xl\/worksheets\/sheet\d+\.xml$/i.test(k)).sort()[0];
+  if(!wsn) throw new Error("sheet Excel tidak ditemukan");
+  const ws=td.decode(files[wsn]);
+  const rows=[], rowRe=/<row[^>]*>([\s\S]*?)<\/row>/g; let rm;
+  while((rm=rowRe.exec(ws))){
+    const cells={}, cRe=/<c\s+r="([A-Z]+)[0-9]+"[^>]*?(?:\st="([a-zA-Z]+)")?[^>]*>([\s\S]*?)<\/c>/g; let cm;
+    while((cm=cRe.exec(rm[1]))){
+      const ci=colL2I(cm[1]), tp=(cm[2]||"").toLowerCase(), inner=cm[3];
+      let val="";
+      if(tp==="s"){ const vi=(inner.match(/<v>(-?\d+)<\/v>/)||[])[1]; val=vi==null?"":(shared[+vi]||""); }
+      else if(tp==="inlinestr"){ const t=(inner.match(/<t[^>]*>([\s\S]*?)<\/t>/)||[])[1]; val=xmlEnt(t||""); }
+      else { const v=(inner.match(/<v>([\s\S]*?)<\/v>/)||[])[1]; val=xmlEnt(v==null?"":v); }
+      cells[ci]=val;
+    }
+    const keys=Object.keys(cells);
+    if(!keys.length) continue;
+    const mx=Math.max.apply(null,keys.map(Number));
+    const arr=[]; for(let i=0;i<=mx;i++) arr.push(cells[i]||"");
+    rows.push(arr);
+  }
+  return rows;
+}
+/* ============ TULIS XLSX: template/format import (tanpa library) ============ */
+const CRC_T=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(d){ let c=0xFFFFFFFF; for(let i=0;i<d.length;i++) c=CRC_T[(c^d[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(entries){
+  const enc=new TextEncoder(), chunks=[], cd=[];
+  const put=(arr,v,n)=>{ for(let i=0;i<n;i++) arr.push((v>>>(i*8))&255); };
+  let off=0;
+  for(const [name,data] of entries){
+    const nb=enc.encode(name), crc=crc32(data);
+    const lh=[];
+    put(lh,0x04034b50,4); put(lh,20,2); put(lh,0,2); put(lh,0,2); put(lh,0,2); put(lh,0,2);
+    put(lh,crc,4); put(lh,data.length,4); put(lh,data.length,4); put(lh,nb.length,2); put(lh,0,2);
+    chunks.push(new Uint8Array(lh),nb,data);
+    cd.push({name:nb,crc,len:data.length,off});
+    off+=lh.length+nb.length+data.length;
+  }
+  const cdStart=off, cdBytes=[]; let cdSize=0;
+  for(const e of cd){
+    const h=[];
+    put(h,0x02014b50,4); put(h,20,2); put(h,20,2); put(h,0,2); put(h,0,2); put(h,0,2); put(h,0,2);
+    put(h,e.crc,4); put(h,e.len,4); put(h,e.len,4); put(h,e.name.length,2);
+    put(h,0,2); put(h,0,2); put(h,0,2); put(h,0,2); put(h,0,4); put(h,e.off,4);
+    cdBytes.push(new Uint8Array(h),e.name);
+    cdSize+=h.length+e.name.length;
+  }
+  const end=[];
+  put(end,0x06054b50,4); put(end,0,2); put(end,0,2); put(end,cd.length,2); put(end,cd.length,2);
+  put(end,cdSize,4); put(end,cdStart,4); put(end,0,2);
+  chunks.push(...cdBytes,new Uint8Array(end));
+  const all=new Uint8Array(chunks.reduce((s,c)=>s+c.length,0));
+  let p=0; for(const c of chunks){ all.set(c,p); p+=c.length; }
+  return all;
+}
+function buildXLSXTemplate(){
+  const enc=new TextEncoder();
+  const escX=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const colRef=i=>{ let s=""; i++; while(i>0){ const m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); } return s; };
+  const cell=(ref,v)=>{
+    if(v===""||v==null) return `<c r="${ref}"/>`;
+    if(typeof v==="number") return `<c r="${ref}"><v>${v}</v></c>`;
+    return `<c r="${ref}" t="inlineStr"><is><t>${escX(v)}</t></is></c>`;
+  };
+  const sheetXML=rows=>{
+    let x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+    rows.forEach((r,ri)=>{ x+=`<row r="${ri+1}">`; r.forEach((v,ci)=>{ x+=cell(colRef(ci)+(ri+1),v); }); x+=`</row>`; });
+    return x+'</sheetData></worksheet>';
+  };
+  const dataSheet=[
+    ["Kode","Nama","Panjang_cm","Lebar_cm","Tinggi_cm","Berat_kg","Isi_per_Mbox"],
+    ["BRG-001","Karton mie instan",40,30,25,"12,5",24],
+    ["BRG-002","Karton air mineral",35,25,30,20,""],
+  ];
+  const panduanSheet=[
+    ["PANDUAN IMPORT EXCEL - kubikasiku"],
+    [""],
+    ["1. Isi data pada sheet DATA, mulai dari baris 2 (baris 1 adalah judul kolom, jangan diubah)."],
+    ["2. Kolom WAJIB diisi: Nama, Panjang_cm, Lebar_cm, Tinggi_cm (angka, lebih dari 0)."],
+    ["3. Kolom opsional (boleh kosong): Kode, Berat_kg, Isi_per_Mbox."],
+    ["4. Satuan: Panjang/Lebar/Tinggi dalam CM, Berat dalam KG."],
+    ["5. Angka boleh pakai koma (12,5) atau titik (12.5)."],
+    ["6. Isi_per_Mbox = jumlah box dalam 1 Mbox (contoh: 24). Kosongkan bila tidak pakai satuan Mbox."],
+    ["7. Jangan ada baris kosong di tengah data. Baris yang tidak lengkap akan dilewati otomatis."],
+    ["8. Simpan file (Ctrl+S), lalu di kubikasiku tekan: Import Excel/CSV, pilih file ini."],
+    [""],
+    ["Catatan: aplikasi hanya membaca sheet pertama (DATA). Sheet PANDUAN ini boleh dihapus."],
+  ];
+  const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.open-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  const rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const workbook='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="DATA" sheetId="1" r:id="rId1"/><sheet name="PANDUAN" sheetId="2" r:id="rId2"/></sheets></workbook>';
+  const wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>';
+  return zipStore([
+    ["[Content_Types].xml",enc.encode(contentTypes)],
+    ["_rels/.rels",enc.encode(rels)],
+    ["xl/workbook.xml",enc.encode(workbook)],
+    ["xl/_rels/workbook.xml.rels",enc.encode(wbRels)],
+    ["xl/worksheets/sheet1.xml",enc.encode(sheetXML(dataSheet))],
+    ["xl/worksheets/sheet2.xml",enc.encode(sheetXML(panduanSheet))],
+  ]);
+}
+$("btnTplXlsx").onclick=()=>{
+  const bytes=buildXLSXTemplate();
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([bytes],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  a.download="format-import-kubikasiku.xlsx";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
+$("btnImpCsv").onclick=()=>$("fileCsv").click();
+$("fileCsv").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const done=r=>alert(`Import selesai: ${r.ok} barang ditambahkan`+(r.skip?`, ${r.skip} baris dilewati (tidak lengkap).`:`.`));
+  const fin=()=>{ e.target.value=""; };
+  const fail=msg=>{ alert("Gagal import: "+msg); fin(); };
+  if(/\.xlsx$/i.test(f.name)){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ done(importRows(parseXLSX(new Uint8Array(rd.result)))); }catch(err){ fail(err.message); } fin(); };
+    rd.onerror=()=>fail("file tidak bisa dibaca");
+    rd.readAsArrayBuffer(f);
+  }else if(/\.csv$/i.test(f.name)||f.type.indexOf("text")===0){
+    const rd=new FileReader();
+    rd.onload=()=>{ try{ done(importCSV(String(rd.result))); }catch(err){ fail(err.message); } fin(); };
+    rd.readAsText(f,"utf-8");
+  }else fail("format file tidak didukung (pakai .xlsx atau .csv)");
+});
+function rekomHTML(list,v,r){
+  const {cands,totVol,totBerat}=volCands(list);
+  const nm=x=>`<b>${x.name}</b> (${x.vol.toFixed(1).replace(".",",")} m³)`;
+  const sGeo=r&&r.notFit>0?` <span style="color:var(--red)">${r.notFit} pcs tidak muat susunannya, cek gambar 3D.</span>`:"";
+  if(!cands.length)
+    return `<div class="warn">💡 <b>Rekomendasi:</b> tidak ada kendaraan yang cukup untuk ${fmtVol(totVol)} barang (≈${Math.round(totBerat).toLocaleString("id-ID")} kg) — kurangi jumlah barang.</div>`;
+  const best=cands[0];
+  if(best.id===v.id){
+    if(r&&r.notFit>0)
+      return `<div class="warn">⚠️ <b>${v.name}</b> cukup secara kubikasi (≈${fmtVol(totVol)} vs ${fmtVol(v.vol)}), tapi <b>${r.notFit} pcs tidak muat susunannya</b> — kardus kaku selalu menyisakan celah. Cek gambar 3D, kurangi jumlah, atau pilih kendaraan lebih besar.</div>`;
+    return `<div class="okmsg">✅ <b>${v.name}</b> sudah pas untuk barang ini (≈${fmtVol(totVol)}).</div>`;
+  }
+  const smaller=cands.filter(x=>x.vol<v.vol);
+  if(smaller.length)
+    return `<div class="okmsg">💡 <b>Rekomendasi:</b> ${nm(smaller[0])} sudah cukup (≈${fmtVol(totVol)} barang) — lebih hemat dibanding ${v.name}.${sGeo}</div>`;
+  return `<div class="warn">💡 <b>Rekomendasi:</b> butuh yang lebih besar — coba ${nm(best)}.${sGeo}</div>`;
+}
+
+/* ============ GAMBAR 3D ISOMETRIK BAK TERISI ============ */
+function shade(hex,f){
+  const n=parseInt(hex.slice(1),16);
+  const r=Math.round(((n>>16)&255)*f), g=Math.round(((n>>8)&255)*f), b=Math.round((n&255)*f);
+  return `rgb(${r},${g},${b})`;
+}
+function drawSim(v,placed,cvId,steps){
+  const cv=$(cvId), ctx=cv.getContext("2d");
+  const W=v.dims[0],L=v.dims[1],H=v.dims[2];
+  const CW=cv.width, CH=cv.height;
+  ctx.clearRect(0,0,CW,CH);
+  const c30=Math.cos(Math.PI/6), s30=Math.sin(Math.PI/6), zs=1.15;
+  const PW=(W+L)*c30, PH=(W+L)*s30+H*zs;
+  const sc=Math.min((CW-60)/PW,(CH-70)/PH);
+  const ox=CW/2, oy=40+(H*zs)*sc*0.55;
+  const P=(x,y,z)=>[ox+(x-y)*c30*sc, oy+(x+y)*s30*sc-z*zs*sc];
+  const poly=(pts,fill,stroke,lw)=>{
+    ctx.beginPath();
+    pts.forEach((p,i)=>{const s=P(p[0],p[1],p[2]); i?ctx.lineTo(s[0],s[1]):ctx.moveTo(s[0],s[1]);});
+    ctx.closePath();
+    if(fill){ctx.fillStyle=fill;ctx.fill();}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}
+  };
+  // lantai + grid 1 m
+  poly([[0,0,0],[W,0,0],[W,L,0],[0,L,0]],"#f1f5f9","#94a3b8",1.5);
+  ctx.strokeStyle="#cbd5e1";ctx.lineWidth=1;
+  for(let x=1;x<W;x+=1){const a=P(x,0,0),b=P(x,L,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  for(let y=1;y<L;y+=1){const a=P(0,y,0),b=P(W,y,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  // dinding belakang (transparan)
+  poly([[W,0,0],[W,L,0],[W,L,H],[W,0,H]],"rgba(37,99,235,.07)","#64748b",1.5);
+  poly([[0,L,0],[W,L,0],[W,L,H],[0,L,H]],"rgba(37,99,235,.10)","#64748b",1.5);
+  // barang: jauh dulu (x+y besar), lalu z rendah
+  placed.sort((a,b)=>((b.x+b.y)-(a.x+a.y))||(a.z-b.z));
+  for(const it of placed){
+    const {x,y,z,w,l,h}=it, c=it.color;
+    poly([[x,y,z+h],[x+w,y,z+h],[x+w,y+l,z+h],[x,y+l,z+h]],shade(c,1.0),"rgba(15,23,42,.35)",1);       // atas
+    poly([[x,y,z],[x+w,y,z],[x+w,y,z+h],[x,y,z+h]],shade(c,0.78),"rgba(15,23,42,.25)",0.75);            // depan
+    poly([[x,y,z],[x,y+l,z],[x,y+l,z+h],[x,y,z+h]],shade(c,0.60),"rgba(15,23,42,.25)",0.75);            // samping
+  }
+  // kerangka bak penuh
+  const E=[[0,0,0],[W,0,0],[W,L,0],[0,L,0],[0,0,H],[W,0,H],[W,L,H],[0,L,H]];
+  const edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  ctx.strokeStyle="#1e3a8a";ctx.lineWidth=2.5;
+  edges.forEach(([a,b])=>{const p1=P(...E[a]),p2=P(...E[b]);ctx.beginPath();ctx.moveTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);ctx.stroke();});
+  // label ukuran
+  ctx.fillStyle="#1e3a8a";ctx.font="bold 15px system-ui";
+  const m1=P(W/2,-0.12,0), m2=P(-0.12,L/2,0), m3=P(0,0,H+0.12);
+  ctx.textAlign="center";
+  ctx.fillText(v.dims[0].toFixed(2).replace(".",",")+" m",m1[0],m1[1]+18);
+  ctx.fillText(v.dims[1].toFixed(2).replace(".",",")+" m",m2[0]-8,m2[1]+5);
+  ctx.fillText(v.dims[2].toFixed(2).replace(".",",")+" m",m3[0],m3[1]-6);
+  // penanda arah muat: depan -> belakang
+  ctx.font="bold 12px system-ui";ctx.fillStyle="#1d4ed8";ctx.textAlign="center";
+  const fd=P(0,L/2,0), bd=P(W,L/2,0);
+  ctx.fillText("DEPAN",fd[0],fd[1]+22);
+  ctx.fillText("BELAKANG",bd[0],bd[1]+22);
+  // nomor langkah muat di atas tiap kolom (panduan posisi)
+  if(steps&&steps.length){
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    steps.forEach(s=>{
+      let top=null;
+      for(const b of placed){ if(b.step===s.n&&(!top||b.z+b.h>top.z+top.h)) top=b; }
+      if(!top) return;
+      const c=P(top.x+top.w/2, top.y+top.l/2, top.z+top.h);
+      ctx.beginPath();ctx.arc(c[0],c[1]-13,11,0,7);ctx.fillStyle="#0f172a";ctx.fill();
+      ctx.fillStyle="#fff";ctx.font="bold 12px system-ui";
+      ctx.fillText(s.n, c[0], c[1]-12.5);
+    });
+    ctx.textBaseline="alphabetic";
+  }
+  // judul
+  ctx.textAlign="left";ctx.fillStyle="#0f172a";ctx.font="bold 17px system-ui";
+  ctx.fillText(v.name+" — ruang muat",14,26);
+  ctx.font="13px system-ui";ctx.fillStyle="#64748b";
+  ctx.fillText(placed.length+" pcs tergambar • "+v.vol.toFixed(2).replace(".",",")+" m³",14,46);
+}
+
+/* ============ INIT ============ */
+load();
+$("modeTangga").classList.toggle("active",packMode==="tangga");
+$("modePenuh").classList.toggle("active",packMode==="penuh");
+updateVehModeTag();
+renderVehSelect();
+renderShipList();
+renderItems();
+hitungOtomatis();
+$("shipDari").value=shipDari; $("shipKe").value=shipKe;
+$("shipDari").oninput=e=>{ shipDari=e.target.value; save(); };
+$("shipKe").oninput=e=>{ shipKe=e.target.value; save(); };
+/* ===== PWA: install ke layar utama + offline ===== */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=$('btnInstall');
+  if(b){ b.disabled=false; $('installHint').textContent='Siap dipasang — tekan tombol di atas.'; }
+});
+window.addEventListener('appinstalled',()=>{
+  deferredPrompt=null;
+  const b=$('btnInstall');
+  if(b){ b.disabled=true; b.textContent='✅ Sudah terinstall'; }
+});
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone){
+  const h=$('installHint');
+  if(h) h.textContent='Di iPhone: ketuk tombol Bagikan di browser → "Tambah ke Layar Utama".';
+}
+$('btnInstall').addEventListener('click',async()=>{
+  if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; }
+});
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+/* ===== Sinkronisasi cloud (backend cPanel) ===== */
+async function apiCall(body){
+  const r=await fetch("api.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  return r.json();
+}
+function localPayload(){ return {items,vehId,ship,packMode,vehAuto,shipDari,shipKe,riwayat}; }
+function applyPayload(p){
+  if(!p||typeof p!=="object") return;
+  syncing=true;
+  try{
+    items=p.items||[]; vehId=p.vehId||"cddbox"; ship=p.ship||{}; packMode=p.packMode||"tangga";
+    vehAuto=p.vehAuto!==false; shipDari=p.shipDari||""; shipKe=p.shipKe||"";
+    if(!VEHICLES.find(v=>v.id===vehId)) vehId="cddbox";
+    if(Array.isArray(p.riwayat)) riwayat=p.riwayat;
+    save(); saveRiw(); renderRiw();
+  }finally{ syncing=false; }
+}
+function renderAll(){
+  $("modeTangga").classList.toggle("active",packMode==="tangga");
+  $("modePenuh").classList.toggle("active",packMode==="penuh");
+  updateVehModeTag(); renderVehSelect(); renderShipList(); renderItems(); hitungOtomatis();
+  $("shipDari").value=shipDari; $("shipKe").value=shipKe;
+}
+function cloudUI(){
+  const logged=!!cloudToken;
+  $("cloudForm").style.display=logged?"none":"grid";
+  $("btnCloudOut").style.display=logged?"":"none";
+  $("cloudStatus").textContent=logged?("Masuk sebagai "+cloudUser+" — sinkronisasi aktif."):"Belum masuk — data hanya tersimpan di HP ini.";
+}
+async function cloudPull(silent){
+  if(!cloudToken) return;
+  try{
+    const r=await apiCall({action:"pull",token:cloudToken});
+    if(!r.ok){ if(r.error==="token") cloudLogout(true); return; }
+    if(r.payload && r.updated_at>cloudBase){
+      try{localStorage.setItem("kubikasiku_backup_"+Date.now(),localStorage.getItem("kubikasiku")||"");}catch(e){}
+      applyPayload(r.payload);
+      cloudBase=r.updated_at;
+      try{localStorage.setItem("kubikasiku_base",String(cloudBase));}catch(e){}
+      renderAll();
+      if(!silent) $("cloudStatus").textContent="☁️ Data terbaru dari perangkat lain sudah diterapkan.";
+    }
+  }catch(e){/* offline: tetap pakai data lokal */}
+}
+function cloudPushSoon(){
+  if(!cloudToken||syncing) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(cloudPush,2000);
+}
+async function cloudPush(){
+  if(!cloudToken) return;
+  const ts=Date.now(), payload=localPayload();
+  try{
+    const r=await apiCall({action:"push",token:cloudToken,payload:payload,updated_at:ts,base:cloudBase});
+    if(r.ok){
+      cloudBase=r.updated_at;
+      try{localStorage.setItem("kubikasiku_base",String(cloudBase));}catch(e){}
+    }else if(r.error==="conflict"){
+      await cloudPull();
+      $("cloudStatus").textContent="☁️ Perangkat lain lebih baru — datanya yang dipakai (lokal dicadangkan otomatis).";
+    }else if(r.error==="token"){ cloudLogout(true); }
+  }catch(e){/* offline: coba lagi saat ada perubahan berikutnya */}
+}
+async function cloudAuth(mode){
+  const u=$("cloudUser").value.trim(), p=$("cloudPass").value;
+  if(!/^[a-zA-Z0-9_]{3,30}$/.test(u)){ $("cloudStatus").textContent="⚠️ Nama pengguna: huruf/angka/garis bawah, 3–30 karakter."; return; }
+  if(p.length<4){ $("cloudStatus").textContent="⚠️ Kata sandi minimal 4 karakter."; return; }
+  $("cloudStatus").textContent="⏳ Menghubungi server…";
+  try{
+    const r=await apiCall({action:mode,username:u,password:p});
+    if(!r.ok){
+      const msg={exists:"⚠️ Nama sudah dipakai — langsung tekan Masuk.",auth:"⚠️ Nama/kata sandi salah.",
+        username:"⚠️ Nama tidak valid.",password:"⚠️ Kata sandi minimal 4 karakter.",
+        db:"⚠️ Database server belum siap, coba lagi nanti."}[r.error]||("⚠️ Gagal: "+r.error);
+      $("cloudStatus").textContent=msg; return;
+    }
+    cloudToken=r.token; cloudUser=r.username;
+    try{
+      localStorage.setItem("kubikasiku_token",cloudToken);
+      localStorage.setItem("kubikasiku_user",cloudUser);
+      localStorage.setItem("kubikasiku_base",String(cloudBase));
+    }catch(e){}
+    $("cloudPass").value="";
+    if(mode==="register"){ await cloudPush(); }  // data lokal di HP ini diunggah sebagai awal
+    else { await cloudPull(true); }               // ambil data terbaru dari akun
+    cloudUI();
+    if(mode==="register") $("cloudStatus").textContent="Masuk sebagai "+cloudUser+" — sinkronisasi aktif.";
+  }catch(e){ $("cloudStatus").textContent="⚠️ Tidak bisa menghubungi server (offline?)."; }
+}
+function cloudLogout(silent){
+  cloudToken=""; cloudUser=""; clearTimeout(pushTimer);
+  try{localStorage.removeItem("kubikasiku_token");localStorage.removeItem("kubikasiku_user");}catch(e){}
+  cloudUI();
+  if(!silent) $("cloudStatus").textContent="Sudah keluar — data tetap tersimpan di HP ini.";
+}
+$("btnCloudReg").onclick=()=>cloudAuth("register");
+$("btnCloudLogin").onclick=()=>cloudAuth("login");
+$("btnCloudOut").onclick=()=>cloudLogout();
+// pulihkan sesi login lalu tarik data terbaru
+try{
+  cloudToken=localStorage.getItem("kubikasiku_token")||"";
+  cloudUser=localStorage.getItem("kubikasiku_user")||"";
+  cloudBase=parseInt(localStorage.getItem("kubikasiku_base")||"0",10)||0;
+}catch(e){}
+cloudUI();
+cloudPull(true);
+
+/* ===== Riwayat perhitungan ===== */
+let riwayat=[]; // {id,nama,savedAt,vehId,vehAuto,packMode,shipDari,shipKe,lines:[{kode,nama,p,l,t,berat,perMbox,q,m}]}
+function saveRiw(){ try{localStorage.setItem("kubikasiku_riwayat",JSON.stringify(riwayat));}catch(e){} cloudPushSoon(); }
+function loadRiw(){ try{ riwayat=JSON.parse(localStorage.getItem("kubikasiku_riwayat"))||[]; if(!Array.isArray(riwayat)) riwayat=[]; }catch(e){ riwayat=[]; } }
+function fmtTgl(ts){ const d=new Date(ts),p=n=>String(n).padStart(2,"0"); return p(d.getDate())+"/"+p(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+
+function simpanRiwayat(){
+  const hint=$("saveCalcHint");
+  const keys=Object.keys(ship).map(Number).filter(k=>ship[k]&&ship[k].q>0&&items[k]);
+  if(!keys.length){ hint.style.display=""; hint.textContent="⚠️ Belum ada barang di Hitung Volume."; return; }
+  const lines=keys.map(k=>{
+    const it=items[k], e=ship[k];
+    return {kode:it.kode||"",nama:it.nama,p:it.p,l:it.l,t:it.t,berat:it.berat||0,perMbox:it.perMbox||1,q:e.q,m:e.m||"mbox"};
+  });
+  const v=VEHICLES.find(x=>x.id===vehId);
+  riwayat.unshift({id:"r"+Date.now().toString(36)+Math.floor(Math.random()*9999),
+    nama:fmtTgl(Date.now())+" • "+(v?v.name:"-")+" • "+lines.length+" barang",
+    savedAt:Date.now(),vehId:vehId,vehAuto:vehAuto,packMode:packMode,shipDari:shipDari,shipKe:shipKe,lines:lines});
+  if(riwayat.length>50) riwayat.length=50; // batasi 50 entri
+  saveRiw(); renderRiw();
+  hint.style.display=""; hint.textContent="✅ Tersimpan di Riwayat.";
+  setTimeout(()=>{hint.style.display="none";},2500);
+}
+
+function renderRiw(){
+  const box=$("riwList");
+  if(!riwayat.length){ box.innerHTML='<div class="hint">Belum ada riwayat. Hitung volume lalu tekan 💾 Simpan perhitungan ini.</div>'; return; }
+  box.innerHTML=riwayat.map(r=>{
+    const v=VEHICLES.find(x=>x.id===r.vehId);
+    const tot=r.lines.reduce((s,L)=>s+L.p*L.l*L.t*(L.m==="box"?Math.ceil(L.q/(L.perMbox||1)):L.q),0);
+    const rute=(r.shipDari||r.shipKe)?(" • "+(r.shipDari||"?")+" → "+(r.shipKe||"?")):"";
+    return '<div class="card" style="margin:8px 0;padding:12px">'
+      +'<div><b>'+r.nama+'</b><br><span class="hint">'+(v?v.name:"")+rute+' • '+tot.toFixed(2).replace(".",",")+' m³</span></div>'
+      +'<div style="display:flex;gap:8px;margin-top:8px">'
+      +'<button class="btn-ghost" style="flex:1;margin-top:0" onclick="bukaRiwayat(\''+r.id+'\')">📂 Buka</button>'
+      +'<button class="btn-ghost" style="flex:1;margin-top:0" onclick="hapusRiwayat(\''+r.id+'\')">🗑️ Hapus</button>'
+      +'</div></div>';
+  }).join("");
+}
+
+function bukaRiwayat(id){
+  const r=riwayat.find(x=>x.id===id); if(!r) return;
+  syncing=true;
+  try{
+    const newShip={};
+    r.lines.forEach(L=>{
+      let idx=items.findIndex(it=>(L.kode&&it.kode===L.kode)||(!L.kode&&it.nama===L.nama));
+      if(idx<0){ // barang tidak ada di master -> tambahkan
+        idx=items.length;
+        items.push({kode:L.kode,nama:L.nama,p:L.p,l:L.l,t:L.t,berat:L.berat,perMbox:L.perMbox||1,color:PALETTE[items.length%PALETTE.length]});
+      }
+      newShip[idx]={q:L.q,m:L.m||"mbox"};
+    });
+    ship=newShip;
+    vehId=r.vehId||"cddbox"; if(!VEHICLES.find(v=>v.id===vehId)) vehId="cddbox";
+    vehAuto=r.vehAuto!==false; packMode=r.packMode||"tangga";
+    shipDari=r.shipDari||""; shipKe=r.shipKe||"";
+    save();
+  }finally{ syncing=false; }
+  renderItems(); renderAll();
+  goTab(2);
+}
+
+function hapusRiwayat(id){
+  if(!confirm("Hapus riwayat ini?")) return;
+  riwayat=riwayat.filter(x=>x.id!==id);
+  saveRiw(); renderRiw();
+}
+
+$("btnSaveCalc").onclick=simpanRiwayat;
+loadRiw(); renderRiw();
+
+cekUpdate(false);
+</script>
+</body>
+</html>
